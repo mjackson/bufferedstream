@@ -12,7 +12,7 @@
     "test": "vows bufferedstream_test.js"
   },
   "engines": {
-    "node": ">=0.4.12"
+    "node": ">=0.4.7"
   },
   "dependencies": {},
   "devDependencies": {
