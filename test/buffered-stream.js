@@ -1,7 +1,7 @@
 var assert = require("assert");
 var vows = require("vows");
 var Stream = require("stream").Stream;
-var BufferedStream = require("./bufferedstream");
+var BufferedStream = require("../buffered-stream");
 
 vows.describe("stream").addBatch({
   "A BufferedStream": {

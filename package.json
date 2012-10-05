@@ -7,9 +7,9 @@
     "type": "git",
     "url": "git://github.com/mjijackson/bufferedstream.git"
   },
-  "main": "./bufferedstream.js",
+  "main": "./buffered-stream.js",
   "scripts": {
-    "test": "vows bufferedstream_test.js"
+    "test": "vows test/buffered-stream.js"
   },
   "engines": {
     "node": ">=0.4.7"
