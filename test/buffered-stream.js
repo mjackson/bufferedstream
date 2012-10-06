@@ -1,197 +1,191 @@
-var assert = require("assert");
-var vows = require("vows");
-var Stream = require("stream").Stream;
-var BufferedStream = require("../buffered-stream");
+var assert = require('assert');
+var Stream = require('stream').Stream;
+var BufferedStream = require('../buffered-stream');
 
-vows.describe("stream").addBatch({
-  "A BufferedStream": {
-    topic: new BufferedStream,
-    "should be an instance of Stream": function (stream) {
-      assert.instanceOf(stream, Stream);
-    },
-    "should be empty": function (stream) {
-      assert.ok(stream.empty);
-    },
-    "should not be full": function (stream) {
+describe('A BufferedStream', function () {
+  var stream = new BufferedStream;
+
+  it('is an instance of Stream', function () {
+    assert.ok(stream instanceof Stream);
+  });
+
+  it('is empty', function () {
+    assert.ok(stream.empty);
+  });
+
+  it('is not full', function () {
+    assert.ok(!stream.full);
+  });
+
+  it('is readable', function () {
+    assert.ok(stream.readable);
+  });
+
+  it('is writable', function () {
+    assert.ok(stream.writable);
+  });
+
+  it('is not ended', function () {
+    assert.ok(!stream.ended);
+  });
+
+  it('does not have an encoding', function () {
+    assert.ok(!stream.encoding);
+  });
+
+  describe('with a maxSize of 0', function () {
+    var stream = new BufferedStream(0);
+
+    it('is not full', function () {
       assert.ok(!stream.full);
-    },
-    "should be readable": function (stream) {
-      assert.ok(stream.readable);
-    },
-    "should be writable": function (stream) {
-      assert.ok(stream.writable);
-    },
-    "should not be ended": function (stream) {
-      assert.ok(!stream.ended);
-    },
-    "should not have an encoding": function (stream) {
-      assert.ok(!stream.encoding);
-    },
-    "with a maxSize of 0": {
-      topic: new BufferedStream(0),
-      "should not be full": function (stream) {
-        assert.ok(!stream.full);
-      }
-    },
-    "after end() has been called": {
-      topic: function () {
-        var stream = new BufferedStream;
+    });
+  });
+
+  describe('after end() has been called', function () {
+    var stream = new BufferedStream;
+    stream.end();
+
+    it('is ended', function () {
+      assert.ok(stream.ended);
+    });
+
+    it('throws an error when written to', function () {
+      assert.throws(function () {
+        stream.write('hello');
+      }, /not writable/);
+    });
+
+    it('throws an error when ended again', function () {
+      assert.throws(function () {
         stream.end();
-        return stream;
-      },
-      "should be ended": function (stream) {
-        assert.ok(stream.ended);
-      },
-      "should throw an error when written to": function (stream) {
-        assert.throws(function () {
-          stream.write("hello");
-        }, /not writable/);
-      },
-      "should throw an error when ended again": function (stream) {
-        assert.throws(function () {
-          stream.end();
-        }, /already ended/);
-      }
-    },
-    "with string contents and no encoding": {
-      topic: function () {
-        var stream = new BufferedStream("hello");
-        var self = this;
+      }, /already ended/);
+    });
+  });
 
-        stream.on("data", function (chunk) {
-          self.callback(null, chunk);
-        });
-      },
-      "should emit buffers": function (chunk) {
-        assert.instanceOf(chunk, Buffer);
-      }
-    },
-    "with string contents and an encoding": {
-      topic: function () {
-        var stream = new BufferedStream("hello");
-        var self = this;
+  describe('with string contents and no encoding', function () {
+    it('emits buffers', function (callback) {
+      var stream = new BufferedStream('hello');
 
-        stream.setEncoding("base64");
+      stream.on('data', function (chunk) {
+        assert.ok(chunk instanceof Buffer);
+        callback(null);
+      });
+    });
+  });
 
-        stream.on("data", function (chunk) {
-          self.callback(null, chunk);
-        });
-      },
-      "should emit strings": function (chunk) {
-        assert.equal(typeof chunk, "string");
-      },
-      "should use the proper encoding": function (chunk) {
-        var expect = new Buffer("hello").toString("base64");
-        assert.equal(chunk, expect);
-      }
-    },
-    "when write() is called with a string in base64 encoding": {
-      topic: function () {
-        this.content = "hello";
+  describe('with string contents and an encoding', function () {
+    var chunk;
+    beforeEach(function (callback) {
+      var stream = new BufferedStream('hello');
+      stream.setEncoding('base64');
 
-        var stream = new BufferedStream;
-        stream.write(new Buffer(this.content).toString("base64"), "base64");
-        stream.end();
+      stream.on('data', function (c) {
+        chunk = c;
+        callback(null);
+      });
+    });
 
-        var content = "",
-          self = this;
+    it('emits strings', function () {
+      assert.equal(typeof chunk, 'string');
+    });
 
-        stream.on("data", function (chunk) {
-          content += chunk.toString();
-        });
+    it('uses the proper encoding', function () {
+      assert.equal(chunk, new Buffer('hello').toString('base64'));
+    });
+  });
 
-        stream.on("end", function () {
-          self.callback(null, content);
-        });
-      },
-      "should use the proper encoding": function (content) {
-        assert.equal(content, this.content);
-      }
-    },
-    "when sourced from a string": {
-      topic: function () {
-        this.content = "Hello world";
-        var source = this.content;
-        bufferSource(source, this.callback);
-      },
-      "should emit that string's content": function (content) {
-        assert.equal(content, this.content);
-      },
-      "and temporarily paused": {
-        topic: function () {
-          this.content = "Hello world";
-          var source = this.content;
-          temporarilyPauseThenBufferSource(source, this.callback);
-        },
-        "should emit that string's content": function (content) {
-          assert.equal(content, this.content);
-        }
-      }
-    },
-    "when sourced from a Buffer": {
-      topic: function () {
-        this.content = "Hello world";
-        var source = new Buffer(this.content);
-        bufferSource(source, this.callback);
-      },
-      "should emit that buffer's content": function (content) {
-        assert.equal(content, this.content);
-      },
-      "and temporarily paused": {
-        topic: function () {
-          this.content = "Hello world";
-          var source = new Buffer(this.content);
-          temporarilyPauseThenBufferSource(source, this.callback);
-        },
-        "should emit that buffer's content": function (content) {
-          assert.equal(content, this.content);
-        }
-      }
-    },
-    "when sourced from another Stream": {
-      topic: function () {
-        this.content = "Hello world";
-        var source = new BufferedStream(this.content);
-        bufferSource(source, this.callback);
-      },
-      "should emit that stream's content": function (content) {
-        assert.equal(content, this.content);
-      },
-      "and temporarily paused": {
-        topic: function () {
-          this.content = "Hello world";
-          var source = new BufferedStream(this.content);
-          temporarilyPauseThenBufferSource(source, this.callback);
-        },
-        "should emit that stream's content": function (content) {
-          assert.equal(content, this.content);
-        }
-      }
-    }
-  }
-}).export(module);
+  describe('when write() is called with a string in base64 encoding', function () {
+    it('uses the proper encoding', function (callback) {
+      var content = 'hello';
+      var stream = new BufferedStream;
+      stream.write(new Buffer(content).toString('base64'), 'base64');
+      stream.end();
+
+      var buffer = '';
+
+      stream.on('data', function (chunk) {
+        buffer += chunk.toString();
+      });
+
+      stream.on('end', function () {
+        assert.equal(buffer, content);
+        callback(null);
+      });
+    });
+  });
+
+  describe('when sourced from a string', function () {
+    testSourceType('Hello world', String);
+  });
+
+  describe('when sourced from a Buffer', function () {
+    testSourceType('Hello world', Buffer);
+  });
+
+  describe('when sourced from a Stream', function () {
+    testSourceType('Hello world', BufferedStream);
+  });
+});
 
 function bufferSource(source, callback) {
   var stream = new BufferedStream(source);
-  var content = "";
+  var buffer = '';
 
-  stream.on("data", function (chunk) {
-    content += chunk.toString();
+  stream.on('data', function (chunk) {
+    buffer += chunk.toString();
   });
 
-  stream.on("end", function () {
-    callback(null, content);
+  stream.on('end', function () {
+    callback(null, buffer);
   });
+
+  if (typeof source.resume === 'function') {
+    source.resume();
+  }
 
   return stream;
 }
 
 function temporarilyPauseThenBufferSource(source, callback) {
   var stream = bufferSource(source, callback);
-
   stream.pause();
 
   setTimeout(function () {
     stream.resume();
   }, 1);
+}
+
+function testSourceType(content, sourceType) {
+  var source;
+  beforeEach(function () {
+    source = new sourceType(content);
+
+    if (typeof source.pause === 'function') {
+      source.pause();
+    }
+  });
+
+  it("emits that string's content", function (callback) {
+    bufferSource(source, function (err, buffer) {
+      if (err) {
+        callback(err);
+      } else {
+        assert.equal(buffer, content);
+        callback(null);
+      }
+    });
+  });
+
+  describe('and temporarily paused', function () {
+    it("emits that string's content", function (callback) {
+      temporarilyPauseThenBufferSource(source, function (err, buffer) {
+        if (err) {
+          callback(err);
+        } else {
+          assert.equal(buffer, content);
+          callback(null);
+        }
+      });
+    });
+  });
 }
