@@ -28,12 +28,12 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
     source = maxSize;
-    maxSize = -1;
+    maxSize = Infinity;
   }
 
   // This is a soft limit. It's only used to indicate to other streams
-  // writing to this one when they should pause. If negative (the default),
-  // this stream will buffer indefinitely.
+  // writing to this one when they should pause. If not specified, this
+  // stream will buffer indefinitely.
   this.maxSize = maxSize;
 
   this._buffer = [];
@@ -62,8 +62,8 @@ BufferedStream.prototype.__defineGetter__('empty', function () {
 /**
  * A read-only property that returns true if this stream's buffer is full.
  */
-BufferedStream.prototype.__defineGetter__("full", function () {
-  return this.maxSize >= 0 && this.maxSize < this.size;
+BufferedStream.prototype.__defineGetter__('full', function () {
+  return this.maxSize < this.size;
 });
 
 /**
