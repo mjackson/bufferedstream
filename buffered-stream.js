@@ -1,19 +1,19 @@
-var util = require("util");
-var Stream = require("stream").Stream;
+var util = require('util');
+var Stream = require('stream').Stream;
 
 module.exports = BufferedStream;
 
 /**
- * A readable/writable Stream that buffers data until next tick. The `maxSize`
+ * A readable/writable Stream that buffers data until next tick. The maxSize
  * determines the byte size at which the buffer is considered "full". When the
- * stream is full, calls to `write` will return `false` which should indicate
+ * stream is full, calls to write will return false which should indicate
  * to the writing stream that it should pause. This argument may be omitted to
  * indicate this stream has no maximum size.
  *
- * The `source` and `sourceEncoding` arguments may be used to easily wrap this
+ * The source and sourceEncoding arguments may be used to easily wrap this
  * stream around another, or a simple string. If the source is another stream,
  * it is piped to this stream. If it's a string, it is used as the entire
- * contents of this stream and passed to `end`.
+ * contents of this stream and passed to end.
  */
 function BufferedStream(maxSize, source, sourceEncoding) {
   Stream.call(this);
@@ -25,7 +25,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this.writable = true;
   this.ended = false;
 
-  if (typeof maxSize != "number") {
+  if (typeof maxSize !== 'number') {
     sourceEncoding = source;
     source = maxSize;
     maxSize = -1;
@@ -41,7 +41,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this._flushing = false;
   this._wasFull = false;
 
-  if (typeof source != "undefined") {
+  if (typeof source !== 'undefined') {
     if (source instanceof Stream) {
       source.pipe(this);
     } else {
@@ -53,14 +53,14 @@ function BufferedStream(maxSize, source, sourceEncoding) {
 util.inherits(BufferedStream, Stream);
 
 /**
- * A read-only property that returns `true` if this stream has no data to emit.
+ * A read-only property that returns true if this stream has no data to emit.
  */
-BufferedStream.prototype.__defineGetter__("empty", function () {
-  return this._buffer.length == 0;
+BufferedStream.prototype.__defineGetter__('empty', function () {
+  return this._buffer.length === 0;
 });
 
 /**
- * A read-only property that returns `true` if this stream's buffer is full.
+ * A read-only property that returns true if this stream's buffer is full.
  */
 BufferedStream.prototype.__defineGetter__("full", function () {
   return this.maxSize >= 0 && this.maxSize < this.size;
@@ -75,33 +75,33 @@ BufferedStream.prototype.setEncoding = function (encoding) {
 };
 
 /**
- * Prevents this stream from emitting `data` events until `resume` is called.
+ * Prevents this stream from emitting data events until resume is called.
  * This does not prevent writes to this stream.
  */
 BufferedStream.prototype.pause = function () {
   this._wait = true;
-  this.emit("pause");
+  this.emit('pause');
 };
 
 /**
- * Resumes emitting `data` events.
+ * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
   this._wait = false;
-  this.emit("resume");
+  this.emit('resume');
 };
 
 /**
- * Writes the given `chunk` of data to this stream. Returns `false` if this
- * stream is full and should not be written to further until drained, `true`
+ * Writes the given chunk of data to this stream. Returns false if this
+ * stream is full and should not be written to further until drained, true
  * otherwise.
  */
 BufferedStream.prototype.write = function (chunk, encoding) {
   if (!this.writable || this.ended) {
-    throw new Error("Stream is not writable");
+    throw new Error('Stream is not writable');
   }
 
-  if (typeof chunk == "string") {
+  if (typeof chunk === 'string') {
     chunk = new Buffer(chunk, encoding);
   }
 
@@ -133,10 +133,10 @@ BufferedStream.prototype.write = function (chunk, encoding) {
 };
 
 /**
- * Tries to emit all data that is currently in the buffer out to all `data`
+ * Tries to emit all data that is currently in the buffer out to all data
  * listeners. If this stream is paused, not readable, has no data in the buffer
- * this method does nothing. If this stream has previously returned `false` from
- * a write and any space is available in the buffer after flushing, a `drain`
+ * this method does nothing. If this stream has previously returned false from
+ * a write and any space is available in the buffer after flushing, a drain
  * event is emitted.
  */
 BufferedStream.prototype.flush = function () {
@@ -146,9 +146,9 @@ BufferedStream.prototype.flush = function () {
     this.size -= chunk.length;
 
     if (this.encoding) {
-      this.emit("data", chunk.toString(this.encoding));
+      this.emit('data', chunk.toString(this.encoding));
     } else {
-      this.emit("data", chunk);
+      this.emit('data', chunk);
     }
   }
 
@@ -156,17 +156,17 @@ BufferedStream.prototype.flush = function () {
   // has some room in the buffer.
   if (this._wasFull && !this.full) {
     this._wasFull = false;
-    this.emit("drain");
+    this.emit('drain');
   }
 };
 
 /**
- * Writes the given `chunk` to this stream and queues the `end` event to be
- * called as soon as all `data` events have been emitted.
+ * Writes the given chunk to this stream and queues the end event to be
+ * called as soon as all data events have been emitted.
  */
 BufferedStream.prototype.end = function (chunk, encoding) {
   if (this.ended) {
-    throw new Error("Stream is already ended");
+    throw new Error('Stream is already ended');
   }
 
   if (arguments.length > 0) {
@@ -180,7 +180,7 @@ BufferedStream.prototype.end = function (chunk, encoding) {
   process.nextTick(function tick() {
     if (self.empty) {
       self.destroy();
-      self.emit("end");
+      self.emit('end');
     } else {
       process.nextTick(tick);
     }
