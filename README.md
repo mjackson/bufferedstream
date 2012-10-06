@@ -25,16 +25,18 @@ current tick of the event loop is buffered until the next tick. This allows you
 to register event handlers, pause the stream, etc. reliably without losing any
 data.
 
+    var BufferedStream = require('bufferedstream');
+
     var stream = new BufferedStream;
-    stream.write("Hello ");
+    stream.write('Hello ');
     stream.pause();
 
     setTimeout(function () {
-        stream.write("IHdvcmxkLg==", "base64");
-        stream.resume();
-        stream.on("data", function (chunk) {
-            console.log(chunk.toString()); // Hello world.
-        });
+      stream.write('IHdvcmxkLg==', 'base64');
+      stream.resume();
+      stream.on('data', function (chunk) {
+        console.log(chunk.toString()); // Hello world.
+      });
     }, 10);
 
 The `BufferedStream` constructor may also accept a "source" which may be another
@@ -47,9 +49,9 @@ well-documented) that it should be easy to digest in a quick skim.
 
 ## Tests
 
-Run the tests with [vows](http://vowsjs.org):
+Run the tests with [mocha](http://visionmedia.github.com/mocha/):
 
-    $ vows bufferedstream_test.js
+    $ mocha test
 
 ## License
 
