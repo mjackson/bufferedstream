@@ -1,4 +1,5 @@
 [![build status](https://secure.travis-ci.org/mjijackson/bufferedstream.png)](http://travis-ci.org/mjijackson/bufferedstream)
+
 BufferedStream is a reliable base class for streams in node programs that
 buffers data until the next tick of the event loop.
 
