@@ -106,16 +106,14 @@ BufferedStream.prototype.write = function (chunk, encoding) {
 
   if (!this._flushing) {
     var self = this;
-
-    process.nextTick(function tick() {
+    var interval = setInterval(function () {
       self.flush();
 
       if (self.empty) {
         self._flushing = false;
-      } else {
-        process.nextTick(tick);
+        clearInterval(interval);
       }
-    });
+    }, 0);
 
     this._flushing = true;
   }
@@ -172,15 +170,13 @@ BufferedStream.prototype.end = function (chunk, encoding) {
   this.ended = true;
 
   var self = this;
-
-  process.nextTick(function tick() {
+  var interval = setInterval(function () {
     if (self.empty) {
       self.destroy();
       self.emit('end');
-    } else {
-      process.nextTick(tick);
+      clearInterval(interval);
     }
-  });
+  }, 0);
 };
 
 /**
