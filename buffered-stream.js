@@ -5,10 +5,10 @@ module.exports = BufferedStream;
 
 /**
  * A readable/writable Stream that buffers data until next tick. The maxSize
- * determines the byte size at which the buffer is considered "full". When the
- * stream is full, calls to write will return false which should indicate
- * to the writing stream that it should pause. This argument may be omitted to
- * indicate this stream has no maximum size.
+ * determines the byte size at which the buffer is considered "full". This is a
+ * soft limit that is only used to determine when calls to write will return
+ * false, which indicates to a writing stream that it should pause. This
+ * argument may be omitted to indicate this stream has no maximum size.
  *
  * The source and sourceEncoding arguments may be used to easily wrap this
  * stream around another, or a simple string. If the source is another stream,
@@ -18,23 +18,19 @@ module.exports = BufferedStream;
 function BufferedStream(maxSize, source, sourceEncoding) {
   Stream.call(this);
 
-  // Public interface.
-  this.size = 0;
-  this.encoding = null;
-  this.readable = true;
-  this.writable = true;
-  this.ended = false;
-
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
     source = maxSize;
     maxSize = Infinity;
   }
 
-  // This is a soft limit. It's only used to indicate to other streams
-  // writing to this one when they should pause. If not specified, this
-  // stream will buffer indefinitely.
+  // Public interface.
   this.maxSize = maxSize;
+  this.size = 0;
+  this.encoding = null;
+  this.readable = true;
+  this.writable = true;
+  this.ended = false;
 
   this._buffer = [];
   this._wait = false;
