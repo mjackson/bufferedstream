@@ -1,5 +1,7 @@
 = HEAD
 
+  * Use setInterval instead of process.nextTick to prevent pegging the CPU
+    when streams are paused (thanks @jeffbski).
   * Use Infinity instead of -1 to indicate that a stream has no maximum size
     (thanks @mscdex).
   * Use mocha for testing.
