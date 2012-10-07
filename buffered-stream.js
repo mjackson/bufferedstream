@@ -1,5 +1,5 @@
 var util = require('util');
-var Stream = require('stream').Stream;
+var Stream = require('stream');
 
 module.exports = BufferedStream;
 

@@ -9,7 +9,7 @@
   },
   "main": "./buffered-stream.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test/buffered-stream-test.js"
   },
   "engines": {
     "node": ">=0.4.7"
