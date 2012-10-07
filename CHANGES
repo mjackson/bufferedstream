@@ -1,4 +1,4 @@
-= HEAD
+= 1.0.2 / 2012-10-07
 
   * Use setInterval instead of process.nextTick to prevent pegging the CPU
     when streams are paused (thanks @jeffbski).
