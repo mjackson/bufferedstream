@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Bufferedstream by mjijackson</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Bufferedstream</h1>
+        <p>A base stream class for node that reliably buffers until next tick</p>
+
+        <p class="view"><a href="https://github.com/mjijackson/bufferedstream">View the Project on GitHub <small>mjijackson/bufferedstream</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mjijackson/bufferedstream/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mjijackson/bufferedstream/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mjijackson/bufferedstream">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>BufferedStream is a reliable base class for streams in node programs that buffers data until the next tick of the event loop.</p>
+
+<h2>Rationale</h2>
+
+<p>The details of streams are still being worked out in node core. As of this writing there are several different types of streams in node, including some objects that do not actually inherit from Stream. The goal of this library is to iron out the differences between the various stream-like objects and give user code a reliable, documented API they can use now. If the situation ever improves in node core (which we all hope it will) this code may become obsolete.</p>
+
+<h2>Installation</h2>
+
+<p>Using <a href="http://npmjs.org">npm</a>:</p>
+
+<pre><code>$ npm install bufferedstream
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>The key feature of this class is that anything you write to the stream in the current tick of the event loop is buffered until the next tick. This allows you to register event handlers, pause the stream, etc. reliably without losing any data.</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">BufferedStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'bufferedstream'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">stream</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BufferedStream</span><span class="p">;</span>
+<span class="nx">stream</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">'Hello '</span><span class="p">);</span>
+<span class="nx">stream</span><span class="p">.</span><span class="nx">pause</span><span class="p">();</span>
+
+<span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="nx">stream</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">'IHdvcmxkLg=='</span><span class="p">,</span> <span class="s1">'base64'</span><span class="p">);</span>
+  <span class="nx">stream</span><span class="p">.</span><span class="nx">resume</span><span class="p">();</span>
+  <span class="nx">stream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span> <span class="c1">// Hello world.</span>
+  <span class="p">});</span>
+<span class="p">},</span> <span class="mi">10</span><span class="p">);</span>
+</pre></div>
+
+<p>The <code>BufferedStream</code> constructor may also accept a "source" which may be another stream that will be piped directly through to this stream or a string. This is useful for wrapping various stream-like objects and normalizing their behavior across implementations.</p>
+
+<p>Please see the source code for more information. The module is small enough (and well-documented) that it should be easy to digest in a quick skim.</p>
+
+<h2>Tests</h2>
+
+<p>Run the tests with <a href="http://visionmedia.github.com/mocha/">mocha</a>:</p>
+
+<pre><code>$ mocha test
+</code></pre>
+
+<h2>License</h2>
+
+<p>Copyright 2012 Michael Jackson</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mjijackson">mjijackson</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
