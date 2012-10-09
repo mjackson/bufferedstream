@@ -85,6 +85,14 @@ BufferedStream.prototype.pause = function () {
 BufferedStream.prototype.resume = function () {
   this._wait = false;
   this.emit('resume');
+
+  if (!this.empty) {
+    flushOnNextTick(this);
+  }
+
+  if (this.ended) {
+    endOnNextTick(this);
+  }
 };
 
 /**
@@ -105,16 +113,7 @@ BufferedStream.prototype.write = function (chunk, encoding) {
   this.size += chunk.length;
 
   if (!this._flushing) {
-    var self = this;
-    var interval = setInterval(function () {
-      self.flush();
-
-      if (self.empty) {
-        self._flushing = false;
-        clearInterval(interval);
-      }
-    }, 0);
-
+    flushOnNextTick(this);
     this._flushing = true;
   }
 
@@ -169,14 +168,7 @@ BufferedStream.prototype.end = function (chunk, encoding) {
 
   this.ended = true;
 
-  var self = this;
-  var interval = setInterval(function () {
-    if (self.empty) {
-      self.destroy();
-      self.emit('end');
-      clearInterval(interval);
-    }
-  }, 0);
+  endOnNextTick(this);
 };
 
 /**
@@ -189,3 +181,34 @@ BufferedStream.prototype.destroy = function () {
   this.readable = false;
   this.writable = false;
 };
+
+function flushOnNextTick(stream) {
+  var flush = function () {
+    stream.flush();
+
+    if (stream.empty) {
+      stream._flushing = false;
+    } else if (stream._wait) {
+      return;
+    } else {
+      process.nextTick(flush);
+    }
+  };
+
+  process.nextTick(flush);
+}
+
+function endOnNextTick(stream) {
+  var end = function () {
+    if (stream.empty) {
+      stream.destroy();
+      stream.emit('end');
+    } else if (stream._wait) {
+      return;
+    } else {
+      process.nextTick(end);
+    }
+  };
+
+  process.nextTick(end);
+}

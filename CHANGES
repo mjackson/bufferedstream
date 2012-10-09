@@ -1,3 +1,9 @@
+= HEAD
+
+  * Don't prevent the process from exiting when data is still left in the
+    stream. This is a responsibility of the stream consumer, not the stream
+    itself (thanks @jeffbski).
+
 = 1.0.2 / 2012-10-07
 
   * Use setInterval instead of process.nextTick to prevent pegging the CPU
