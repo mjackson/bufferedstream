@@ -1,3 +1,8 @@
+= HEAD
+
+  * Make paused part of the public interface.
+  * Make the buffer of a destroyed stream null to save on memory.
+
 = 1.1.0 / 2012-10-08
 
   * Don't prevent the process from exiting when data is still left in the
