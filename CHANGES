@@ -1,4 +1,4 @@
-= HEAD
+= 1.1.0 / 2012-10-08
 
   * Don't prevent the process from exiting when data is still left in the
     stream. This is a responsibility of the stream consumer, not the stream
