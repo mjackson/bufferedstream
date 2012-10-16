@@ -52,7 +52,7 @@ util.inherits(BufferedStream, Stream);
  * A read-only property that returns true if this stream has no data to emit.
  */
 BufferedStream.prototype.__defineGetter__('empty', function () {
-  return this._buffer && this._buffer.length === 0;
+  return !this._buffer || this._buffer.length === 0;
 });
 
 /**

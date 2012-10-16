@@ -51,6 +51,10 @@ describe('A BufferedStream', function () {
     var stream = new BufferedStream;
     stream.end();
 
+    it('is empty', function () {
+      assert.ok(stream.empty);
+    });
+
     it('is ended', function () {
       assert.ok(stream.ended);
     });
