@@ -3,34 +3,40 @@ var Stream = require('stream');
 var BufferedStream = require('../buffered-stream');
 
 describe('A BufferedStream', function () {
-  var stream = new BufferedStream;
+  describe('when newly created', function () {
+    var stream = new BufferedStream;
 
-  it('is an instance of Stream', function () {
-    assert.ok(stream instanceof Stream);
-  });
+    it('is an instance of Stream', function () {
+      assert.ok(stream instanceof Stream);
+    });
 
-  it('is empty', function () {
-    assert.ok(stream.empty);
-  });
+    it('is empty', function () {
+      assert.ok(stream.empty);
+    });
 
-  it('is not full', function () {
-    assert.ok(!stream.full);
-  });
+    it('is not full', function () {
+      assert.ok(!stream.full);
+    });
 
-  it('is readable', function () {
-    assert.ok(stream.readable);
-  });
+    it('is readable', function () {
+      assert.ok(stream.readable);
+    });
 
-  it('is writable', function () {
-    assert.ok(stream.writable);
-  });
+    it('is writable', function () {
+      assert.ok(stream.writable);
+    });
 
-  it('is not ended', function () {
-    assert.ok(!stream.ended);
-  });
+    it('is not paused', function () {
+      assert.ok(!stream.paused);
+    });
 
-  it('does not have an encoding', function () {
-    assert.ok(!stream.encoding);
+    it('is not ended', function () {
+      assert.ok(!stream.ended);
+    });
+
+    it('does not have an encoding', function () {
+      assert.ok(!stream.encoding);
+    });
   });
 
   describe('with a maxSize of 0', function () {

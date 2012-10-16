@@ -30,10 +30,10 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this.encoding = null;
   this.readable = true;
   this.writable = true;
+  this.paused = false;
   this.ended = false;
 
   this._buffer = [];
-  this._wait = false;
   this._flushing = false;
   this._wasFull = false;
 
@@ -75,7 +75,7 @@ BufferedStream.prototype.setEncoding = function (encoding) {
  * This does not prevent writes to this stream.
  */
 BufferedStream.prototype.pause = function () {
-  this._wait = true;
+  this.paused = true;
   this.emit('pause');
 };
 
@@ -83,7 +83,7 @@ BufferedStream.prototype.pause = function () {
  * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
-  this._wait = false;
+  this.paused = false;
   this.emit('resume');
 
   if (!this.empty) {
@@ -134,7 +134,7 @@ BufferedStream.prototype.write = function (chunk, encoding) {
  */
 BufferedStream.prototype.flush = function () {
   var chunk;
-  while (!this._wait && this.readable && this._buffer.length) {
+  while (!this.paused && this.readable && this._buffer.length) {
     chunk = this._buffer.shift();
     this.size -= chunk.length;
 
@@ -183,32 +183,28 @@ BufferedStream.prototype.destroy = function () {
 };
 
 function flushOnNextTick(stream) {
-  var flush = function () {
+  process.nextTick(function flush() {
     stream.flush();
 
     if (stream.empty) {
       stream._flushing = false;
-    } else if (stream._wait) {
+    } else if (stream.paused) {
       return;
     } else {
       process.nextTick(flush);
     }
-  };
-
-  process.nextTick(flush);
+  });
 }
 
 function endOnNextTick(stream) {
-  var end = function () {
+  process.nextTick(function end() {
     if (stream.empty) {
       stream.destroy();
       stream.emit('end');
-    } else if (stream._wait) {
+    } else if (stream.paused) {
       return;
     } else {
       process.nextTick(end);
     }
-  };
-
-  process.nextTick(end);
+  });
 }
