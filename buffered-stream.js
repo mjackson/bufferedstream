@@ -52,7 +52,7 @@ util.inherits(BufferedStream, Stream);
  * A read-only property that returns true if this stream has no data to emit.
  */
 BufferedStream.prototype.__defineGetter__('empty', function () {
-  return !this._buffer || this._buffer.length === 0;
+  return this._buffer == null || this._buffer.length === 0;
 });
 
 /**
@@ -75,23 +75,20 @@ BufferedStream.prototype.setEncoding = function (encoding) {
  * This does not prevent writes to this stream.
  */
 BufferedStream.prototype.pause = function () {
-  this.paused = true;
-  this.emit('pause');
+  if (!this.paused) {
+    this.paused = true;
+    this.emit('pause');
+  }
 };
 
 /**
  * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
-  this.paused = false;
-  this.emit('resume');
-
-  if (!this.empty) {
+  if (this.paused) {
+    this.paused = false;
+    this.emit('resume');
     flushOnNextTick(this);
-  }
-
-  if (this.ended) {
-    endOnNextTick(this);
   }
 };
 
@@ -112,10 +109,7 @@ BufferedStream.prototype.write = function (chunk, encoding) {
   this._buffer.push(chunk);
   this.size += chunk.length;
 
-  if (!this._flushing) {
-    flushOnNextTick(this);
-    this._flushing = true;
-  }
+  flushOnNextTick(this);
 
   if (this.full) {
     this._wasFull = true;
@@ -151,6 +145,10 @@ BufferedStream.prototype.flush = function () {
     this._wasFull = false;
     this.emit('drain');
   }
+
+  if (this.ended && this.empty) {
+    this._emitEnd();
+  }
 };
 
 /**
@@ -168,43 +166,30 @@ BufferedStream.prototype.end = function (chunk, encoding) {
 
   this.ended = true;
 
-  endOnNextTick(this);
+  if (this.empty) {
+    this._emitEnd();
+  }
 };
 
-/**
- * Destroys this stream immediately. It is no longer readable or writable. This
- * method should rarely ever be called directly by users as it will be called
- * automatically when using BufferedStream#end.
- */
-BufferedStream.prototype.destroy = function () {
+BufferedStream.prototype._emitEnd = function () {
   this._buffer = null;
   this.readable = false;
   this.writable = false;
+  this.emit('end');
 };
 
 function flushOnNextTick(stream) {
-  process.nextTick(function flush() {
-    stream.flush();
+  if (!stream._flushing) {
+    process.nextTick(function flush() {
+      stream.flush();
 
-    if (stream.empty) {
-      stream._flushing = false;
-    } else if (stream.paused) {
-      return;
-    } else {
-      process.nextTick(flush);
-    }
-  });
-}
+      if (stream.empty || stream.paused) {
+        stream._flushing = false;
+      } else {
+        process.nextTick(flush);
+      }
+    });
 
-function endOnNextTick(stream) {
-  process.nextTick(function end() {
-    if (stream.empty) {
-      stream.destroy();
-      stream.emit('end');
-    } else if (stream.paused) {
-      return;
-    } else {
-      process.nextTick(end);
-    }
-  });
+    stream._flushing = true;
+  }
 }

@@ -1,7 +1,12 @@
 = HEAD
 
+  * Fixed a bug that caused end to be emitted multiple times when using pause
+    & resume functionality.
+  * Calling pause/resume consecutively only emits an event if the stream is
+    currently in the opposite state.
   * Make paused part of the public interface.
   * Make the buffer of a destroyed stream null to save on memory.
+  * Removed BufferedStream#destroy.
 
 = 1.1.0 / 2012-10-08
 

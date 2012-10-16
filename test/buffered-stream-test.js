@@ -47,7 +47,38 @@ describe('A BufferedStream', function () {
     });
   });
 
-  describe('after end() has been called', function () {
+  describe('that is paused', function () {
+    var pauseCount, resumeCount, stream;
+    beforeEach(function () {
+      pauseCount = 0;
+      resumeCount = 0;
+      stream = new BufferedStream;
+
+      stream.on('pause', function () {
+        pauseCount += 1;
+      });
+
+      stream.on('resume', function () {
+        resumeCount += 1;
+      });
+
+      stream.pause();
+    });
+
+    it('does not emit pause when paused again', function () {
+      assert.equal(pauseCount, 1);
+      stream.pause();
+      assert.equal(pauseCount, 1);
+    });
+
+    it('emits resume when resumed', function () {
+      assert.equal(resumeCount, 0);
+      stream.resume();
+      assert.equal(resumeCount, 1);
+    });
+  });
+
+  describe('after end has been called', function () {
     var stream = new BufferedStream;
     stream.end();
 
@@ -65,7 +96,7 @@ describe('A BufferedStream', function () {
       }, /not writable/);
     });
 
-    it('throws an error when ended again', function () {
+    it('throws an error when end is called', function () {
       assert.throws(function () {
         stream.end();
       }, /already ended/);
@@ -124,6 +155,28 @@ describe('A BufferedStream', function () {
     });
   });
 
+  describe('when paused and resumed multiple times', function () {
+    var count;
+    beforeEach(function (callback) {
+      count = 0;
+
+      var stream = new BufferedStream('Hello world');
+      stream.pause();
+      stream.resume();
+      stream.pause();
+      stream.resume();
+
+      stream.on('end', function () {
+        count += 1;
+        callback(null);
+      });
+    });
+
+    it('emits end only once', function () {
+      assert.equal(count, 1);
+    });
+  });
+
   describe('when sourced from a string', function () {
     testSourceType('Hello world', String);
   });
@@ -175,7 +228,7 @@ function testSourceType(content, sourceType) {
     }
   });
 
-  it("emits that source's content", function (callback) {
+  it("emits its content", function (callback) {
     bufferSource(source, function (err, buffer) {
       if (err) {
         callback(err);
@@ -187,7 +240,7 @@ function testSourceType(content, sourceType) {
   });
 
   describe('and temporarily paused', function () {
-    it("emits that source's content", function (callback) {
+    it("emits its content", function (callback) {
       temporarilyPauseThenBufferSource(source, function (err, buffer) {
         if (err) {
           callback(err);
