@@ -171,7 +171,7 @@ function testSourceType(content, sourceType) {
     }
   });
 
-  it("emits that string's content", function (callback) {
+  it("emits that source's content", function (callback) {
     bufferSource(source, function (err, buffer) {
       if (err) {
         callback(err);
@@ -183,7 +183,7 @@ function testSourceType(content, sourceType) {
   });
 
   describe('and temporarily paused', function () {
-    it("emits that string's content", function (callback) {
+    it("emits that source's content", function (callback) {
       temporarilyPauseThenBufferSource(source, function (err, buffer) {
         if (err) {
           callback(err);
