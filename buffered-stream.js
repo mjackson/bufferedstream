@@ -4,18 +4,26 @@ var Stream = require('stream');
 module.exports = BufferedStream;
 
 /**
- * A readable/writable Stream that buffers data until next tick. The maxSize
- * determines the byte size at which the buffer is considered "full". This is a
- * soft limit that is only used to determine when calls to write will return
- * false, which indicates to a writing stream that it should pause. This
- * argument may be omitted to indicate this stream has no maximum size.
+ * A readable/writable Stream subclass that buffers data until next tick. The
+ * maxSize determines the number of bytes the buffer can hold before it is
+ * considered "full". This argument may be omitted to indicate this stream has
+ * no maximum size.
  *
  * The source and sourceEncoding arguments may be used to easily wrap this
  * stream around another, or a simple string. If the source is another stream,
  * it is piped to this stream. If it's a string, it is used as the entire
  * contents of this stream and passed to end.
+ *
+ * NOTE: The maxSize is a soft limit that is only used to determine when calls
+ * to write will return false, indicating to streams that are writing to this
+ * stream that they should pause. In any case, calls to write will still append
+ * to the buffer so that no data is lost.
  */
 function BufferedStream(maxSize, source, sourceEncoding) {
+  if (!(this instanceof BufferedStream)) {
+    return new BufferedStream(maxSize, source, sourceEncoding);
+  }
+
   Stream.call(this);
 
   if (typeof maxSize !== 'number') {
@@ -28,10 +36,10 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this.maxSize = maxSize;
   this.size = 0;
   this.encoding = null;
-  this.readable = true;
-  this.writable = true;
   this.paused = false;
   this.ended = false;
+  this.readable = true;
+  this.writable = true;
 
   this._buffer = [];
   this._flushing = false;
@@ -64,7 +72,7 @@ BufferedStream.prototype.__defineGetter__('full', function () {
 
 /**
  * Sets this stream's encoding. If an encoding is set, this stream will emit
- * strings using that encoding. Otherwise, it emits buffers.
+ * strings using that encoding. Otherwise, it emits Buffer objects.
  */
 BufferedStream.prototype.setEncoding = function (encoding) {
   this.encoding = encoding;
@@ -88,7 +96,10 @@ BufferedStream.prototype.resume = function () {
   if (this.paused) {
     this.paused = false;
     this.emit('resume');
-    flushOnNextTick(this);
+
+    if (!this.empty) {
+      flushOnNextTick(this);
+    }
   }
 };
 
@@ -98,7 +109,7 @@ BufferedStream.prototype.resume = function () {
  * otherwise.
  */
 BufferedStream.prototype.write = function (chunk, encoding) {
-  if (!this.writable || this.ended) {
+  if (!this.writable) {
     throw new Error('Stream is not writable');
   }
 
@@ -108,7 +119,6 @@ BufferedStream.prototype.write = function (chunk, encoding) {
 
   this._buffer.push(chunk);
   this.size += chunk.length;
-
   flushOnNextTick(this);
 
   if (this.full) {
@@ -120,40 +130,10 @@ BufferedStream.prototype.write = function (chunk, encoding) {
 };
 
 /**
- * Tries to emit all data that is currently in the buffer out to all data
- * listeners. If this stream is paused, not readable, has no data in the buffer
- * this method does nothing. If this stream has previously returned false from
- * a write and any space is available in the buffer after flushing, a drain
- * event is emitted.
- */
-BufferedStream.prototype.flush = function () {
-  var chunk;
-  while (!this.paused && this.readable && this._buffer.length) {
-    chunk = this._buffer.shift();
-    this.size -= chunk.length;
-
-    if (this.encoding) {
-      this.emit('data', chunk.toString(this.encoding));
-    } else {
-      this.emit('data', chunk);
-    }
-  }
-
-  // Emit "drain" if the stream was full at one point but now
-  // has some room in the buffer.
-  if (this._wasFull && !this.full) {
-    this._wasFull = false;
-    this.emit('drain');
-  }
-
-  if (this.ended && this.empty) {
-    this._emitEnd();
-  }
-};
-
-/**
  * Writes the given chunk to this stream and queues the end event to be
- * called as soon as all data events have been emitted.
+ * called as soon as soon as possible. If the stream is not currently
+ * scheduled to be flushed, the end event will fire immediately. Otherwise, it
+ * will fire after the next flush.
  */
 BufferedStream.prototype.end = function (chunk, encoding) {
   if (this.ended) {
@@ -166,30 +146,64 @@ BufferedStream.prototype.end = function (chunk, encoding) {
 
   this.ended = true;
 
-  if (this.empty) {
-    this._emitEnd();
+  // If the stream isn't already scheduled to flush on the next tick we can
+  // safely end it now. Otherwise it will end after the next flush.
+  if (!this._flushing) {
+    end(this);
   }
-};
-
-BufferedStream.prototype._emitEnd = function () {
-  this._buffer = null;
-  this.readable = false;
-  this.writable = false;
-  this.emit('end');
 };
 
 function flushOnNextTick(stream) {
   if (!stream._flushing) {
-    process.nextTick(function flush() {
-      stream.flush();
+    process.nextTick(function tick() {
+      if (stream.paused) {
+        stream._flushing = false;
+        return;
+      }
 
-      if (stream.empty || stream.paused) {
+      flush(stream);
+
+      if (stream.empty) {
         stream._flushing = false;
       } else {
-        process.nextTick(flush);
+        process.nextTick(tick);
       }
     });
 
     stream._flushing = true;
   }
+}
+
+function flush(stream) {
+  var chunk;
+  while (stream._buffer.length) {
+    chunk = stream._buffer.shift();
+    stream.size -= chunk.length;
+
+    if (stream.encoding) {
+      stream.emit('data', chunk.toString(stream.encoding));
+    } else {
+      stream.emit('data', chunk);
+    }
+
+    // If the stream was full at one point but isn't now, emit "drain".
+    if (stream._wasFull && !stream.full) {
+      stream._wasFull = false;
+      stream.emit('drain');
+    }
+
+    // If the stream was paused in some data event handler, break.
+    if (stream.paused) {
+      break;
+    }
+  }
+
+  if (stream.ended) {
+    end(stream);
+  }
+}
+
+function end(stream) {
+  stream.emit('end');
+  stream._buffer = null;
 }

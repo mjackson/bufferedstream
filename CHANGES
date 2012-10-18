@@ -1,3 +1,8 @@
+= HEAD
+
+  * Removed BufferedStream#flush to be more consistent with native node streams.
+  * More tests.
+
 = 1.2.0 / 2012-10-16
 
   * Fixed a bug that caused end to be emitted multiple times when using pause
