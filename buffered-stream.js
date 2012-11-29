@@ -113,12 +113,17 @@ BufferedStream.prototype.write = function (chunk, encoding) {
     throw new Error('Stream is not writable');
   }
 
+  if (this.ended) {
+    throw new Error('Stream is already ended');
+  }
+
   if (typeof chunk === 'string') {
     chunk = new Buffer(chunk, encoding);
   }
 
   this._buffer.push(chunk);
   this.size += chunk.length;
+
   flushOnNextTick(this);
 
   if (this.full) {
@@ -140,17 +145,12 @@ BufferedStream.prototype.end = function (chunk, encoding) {
     throw new Error('Stream is already ended');
   }
 
-  if (arguments.length > 0) {
-    this.write(chunk, encoding);
-  }
-
+  if (chunk != null) this.write(chunk, encoding);
   this.ended = true;
 
-  // If the stream isn't already scheduled to flush on the next tick we can
-  // safely end it now. Otherwise it will end after the next flush.
-  if (!this._flushing) {
-    end(this);
-  }
+  // Trigger the flush cycle one last time to emit any data that was written
+  // before we called end.
+  flushOnNextTick(this);
 };
 
 function flushOnNextTick(stream) {
@@ -186,12 +186,6 @@ function flush(stream) {
       stream.emit('data', chunk);
     }
 
-    // If the stream was full at one point but isn't now, emit "drain".
-    if (stream._wasFull && !stream.full) {
-      stream._wasFull = false;
-      stream.emit('drain');
-    }
-
     // If the stream was paused in some data event handler, break.
     if (stream.paused) {
       break;
@@ -200,6 +194,13 @@ function flush(stream) {
 
   if (stream.ended) {
     end(stream);
+    return;
+  }
+
+  // If the stream was full at one point but isn't now, emit "drain".
+  if (stream._wasFull && !stream.full) {
+    stream._wasFull = false;
+    stream.emit('drain');
   }
 }
 

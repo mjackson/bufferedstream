@@ -100,6 +100,22 @@ describe('A BufferedStream', function () {
         stream.resume();
         assert.equal(resumeCount, 1);
       });
+
+      it('only emits "end" after it is resumed', function (done) {
+        var endWasCalled = false;
+        stream.on('end', function () {
+          endWasCalled = true;
+        });
+
+        stream.end();
+        assert.equal(endWasCalled, false);
+
+        stream.resume();
+        setTimeout(function () {
+          assert.equal(endWasCalled, true);
+          done();
+        }, 1);
+      });
     });
   });
 
@@ -132,6 +148,14 @@ describe('A BufferedStream', function () {
       assert.throws(function () {
         stream.write('test');
       }, /not writable/);
+    });
+
+    it('throws when a stream is already ended', function () {
+      var stream = new BufferedStream;
+      stream.end();
+      assert.throws(function () {
+        stream.write('test');
+      }, /already ended/);
     });
 
     describe('when called with a string in base64 encoding', function () {
