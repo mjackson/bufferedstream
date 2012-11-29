@@ -110,10 +110,12 @@ describe('A BufferedStream', function () {
         stream.end();
         assert.equal(endWasCalled, false);
 
-        stream.resume();
         setTimeout(function () {
-          assert.equal(endWasCalled, true);
-          done();
+          stream.resume();
+          setTimeout(function () {
+            assert.equal(endWasCalled, true);
+            done();
+          }, 1);
         }, 1);
       });
     });

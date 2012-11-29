@@ -1,3 +1,7 @@
+= HEAD
+
+  * Emit "end" even if the stream is empty after being resumed in a future tick.
+
 = 1.4.0 / 2012-11-29
 
   * The "end" event isn't emitted until the next tick, even on empty streams.

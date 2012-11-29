@@ -96,10 +96,7 @@ BufferedStream.prototype.resume = function () {
   if (this.paused) {
     this.paused = false;
     this.emit('resume');
-
-    if (!this.empty) {
-      flushOnNextTick(this);
-    }
+    flushOnNextTick(this);
   }
 };
 
