@@ -1,3 +1,7 @@
+= 1.4.0 / 2012-11-29
+
+  * The "end" event isn't emitted until the next tick, even on empty streams.
+
 = 1.3.0 / 2012-10-17
 
   * Removed BufferedStream#flush to be more consistent with native node streams.
