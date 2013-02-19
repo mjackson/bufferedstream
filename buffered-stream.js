@@ -170,6 +170,8 @@ function flushOnNextTick(stream) {
 }
 
 function flush(stream) {
+  if (!stream._buffer) return;
+
   var chunk;
   while (stream._buffer.length) {
     chunk = stream._buffer.shift();
