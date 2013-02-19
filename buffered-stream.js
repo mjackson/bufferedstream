@@ -85,7 +85,6 @@ BufferedStream.prototype.setEncoding = function (encoding) {
 BufferedStream.prototype.pause = function () {
   if (!this.paused) {
     this.paused = true;
-    this.emit('pause');
   }
 };
 
@@ -95,7 +94,6 @@ BufferedStream.prototype.pause = function () {
 BufferedStream.prototype.resume = function () {
   if (this.paused) {
     this.paused = false;
-    this.emit('resume');
     flushOnNextTick(this);
   }
 };

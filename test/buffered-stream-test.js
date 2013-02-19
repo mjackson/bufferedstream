@@ -54,70 +54,29 @@ describe('A BufferedStream', function () {
     });
   });
 
-  describe('', function () {
-    var stream, pauseCount, resumeCount;
+  describe('that is paused', function () {
+    var stream;
     beforeEach(function () {
       stream = new BufferedStream;
-      pauseCount = 0;
-      resumeCount = 0;
-
-      stream.on('pause', function () {
-        pauseCount += 1;
-      });
-
-      stream.on('resume', function () {
-        resumeCount += 1;
-      });
+      stream.pause();
     });
 
-    describe('that is not paused', function () {
-      it('does not emit resume when resumed', function () {
-        assert.equal(resumeCount, 0);
+    it('only emits "end" after it is resumed', function (done) {
+      var endWasCalled = false;
+      stream.on('end', function () {
+        endWasCalled = true;
+      });
+
+      stream.end();
+      assert.equal(endWasCalled, false);
+
+      setTimeout(function () {
         stream.resume();
-        assert.equal(resumeCount, 0);
-      });
-
-      it('emits pause when paused', function () {
-        assert.equal(pauseCount, 0);
-        stream.pause();
-        assert.equal(pauseCount, 1);
-      });
-    });
-
-    describe('that is paused', function () {
-      beforeEach(function () {
-        stream.pause();
-      });
-
-      it('does not emit pause when paused again', function () {
-        assert.equal(pauseCount, 1);
-        stream.pause();
-        assert.equal(pauseCount, 1);
-      });
-
-      it('emits resume when resumed', function () {
-        assert.equal(resumeCount, 0);
-        stream.resume();
-        assert.equal(resumeCount, 1);
-      });
-
-      it('only emits "end" after it is resumed', function (done) {
-        var endWasCalled = false;
-        stream.on('end', function () {
-          endWasCalled = true;
-        });
-
-        stream.end();
-        assert.equal(endWasCalled, false);
-
         setTimeout(function () {
-          stream.resume();
-          setTimeout(function () {
-            assert.equal(endWasCalled, true);
-            done();
-          }, 1);
+          assert.equal(endWasCalled, true);
+          done();
         }, 1);
-      });
+      }, 1);
     });
   });
 
