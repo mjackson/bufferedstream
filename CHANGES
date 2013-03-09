@@ -1,3 +1,7 @@
+= 1.5.1 / 2013-03-09
+
+  * Don't emit "end" when paused (thanks @utricularian).
+
 = 1.5.0 / 2013-02-19
 
   * Don't emit non-standard "pause" and "resume" events.
