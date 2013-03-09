@@ -80,22 +80,18 @@ BufferedStream.prototype.setEncoding = function (encoding) {
 
 /**
  * Prevents this stream from emitting data events until resume is called.
- * This does not prevent writes to this stream.
+ * Note: This does not prevent writes to this stream.
  */
 BufferedStream.prototype.pause = function () {
-  if (!this.paused) {
-    this.paused = true;
-  }
+  this.paused = true;
 };
 
 /**
  * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
-  if (this.paused) {
-    this.paused = false;
-    flushOnNextTick(this);
-  }
+  if (this.paused) flushOnNextTick(this);
+  this.paused = false;
 };
 
 /**
@@ -104,17 +100,10 @@ BufferedStream.prototype.resume = function () {
  * otherwise.
  */
 BufferedStream.prototype.write = function (chunk, encoding) {
-  if (!this.writable) {
-    throw new Error('Stream is not writable');
-  }
+  if (!this.writable) throw new Error('Stream is not writable');
+  if (this.ended) throw new Error('Stream is already ended');
 
-  if (this.ended) {
-    throw new Error('Stream is already ended');
-  }
-
-  if (typeof chunk === 'string') {
-    chunk = new Buffer(chunk, encoding);
-  }
+  if (typeof chunk === 'string') chunk = new Buffer(chunk, encoding);
 
   this._buffer.push(chunk);
   this.size += chunk.length;
@@ -136,37 +125,34 @@ BufferedStream.prototype.write = function (chunk, encoding) {
  * will fire after the next flush.
  */
 BufferedStream.prototype.end = function (chunk, encoding) {
-  if (this.ended) {
-    throw new Error('Stream is already ended');
-  }
+  if (this.ended) throw new Error('Stream is already ended');
 
   if (chunk != null) this.write(chunk, encoding);
   this.ended = true;
 
-  // Trigger the flush cycle one last time to emit any data that was written
-  // before we called end.
+  // Trigger the flush cycle one last time to emit any data that
+  // was written before end was called.
   flushOnNextTick(this);
 };
 
 function flushOnNextTick(stream) {
-  if (!stream._flushing) {
-    process.nextTick(function tick() {
-      if (stream.paused) {
-        stream._flushing = false;
-        return;
-      }
+  if (stream._flushing) return;
+  stream._flushing = true;
 
-      flush(stream);
+  process.nextTick(function tick() {
+    if (stream.paused) {
+      stream._flushing = false;
+      return;
+    }
 
-      if (stream.empty) {
-        stream._flushing = false;
-      } else {
-        process.nextTick(tick);
-      }
-    });
+    flush(stream);
 
-    stream._flushing = true;
-  }
+    if (stream.empty) {
+      stream._flushing = false;
+    } else {
+      process.nextTick(tick);
+    }
+  });
 }
 
 function flush(stream) {
@@ -183,25 +169,15 @@ function flush(stream) {
       stream.emit('data', chunk);
     }
 
-    // If the stream was paused in some data event handler, break.
-    if (stream.paused) {
-      break;
-    }
+    // If the stream was paused in a data event handler, break.
+    if (stream.paused) break;
   }
 
-  if (stream.ended) {
-    end(stream);
-    return;
-  }
-
-  // If the stream was full at one point but isn't now, emit "drain".
-  if (stream._wasFull && !stream.full) {
+  if (stream.ended && !stream.paused) {
+    stream._buffer = null;
+    stream.emit('end');
+  } else if (stream._wasFull && !stream.full) {
     stream._wasFull = false;
     stream.emit('drain');
   }
-}
-
-function end(stream) {
-  stream.emit('end');
-  stream._buffer = null;
 }
