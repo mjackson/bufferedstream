@@ -75,8 +75,8 @@ describe('A BufferedStream', function () {
         setTimeout(function () {
           assert.equal(endWasCalled, true);
           done();
-        }, 1);
-      }, 1);
+        }, 5);
+      }, 0);
     });
   });
 
