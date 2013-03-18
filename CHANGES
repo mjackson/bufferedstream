@@ -1,3 +1,7 @@
+= HEAD
+
+  * Use node 0.10's setImmediate instead of process.nextTick (thanks @jeffbski).
+
 = 1.5.1 / 2013-03-09
 
   * Don't emit "end" when paused (thanks @utricularian).

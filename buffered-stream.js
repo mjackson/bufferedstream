@@ -1,10 +1,9 @@
 var util = require('util');
 var Stream = require('stream');
-// node 0.10.0 changes nextTick to occur before IO, use 0.10's setImmediate,
-// otherwise for older versions of node use process.nextTick
-var setImmediateOrNextTick = (typeof setImmediate === 'function') ?
-                             setImmediate :
-                             process.nextTick;
+
+// Use node 0.10's setImmediate for asynchronous operations, otherwise for
+// older versions of node use process.nextTick.
+var async = (typeof setImmediate === 'function') ? setImmediate : process.nextTick;
 
 module.exports = BufferedStream;
 
@@ -144,7 +143,7 @@ function flushOnNextTick(stream) {
   if (stream._flushing) return;
   stream._flushing = true;
 
-  setImmediateOrNextTick(function tick() {
+  async(function tick() {
     if (stream.paused) {
       stream._flushing = false;
       return;
@@ -155,7 +154,7 @@ function flushOnNextTick(stream) {
     if (stream.empty) {
       stream._flushing = false;
     } else {
-      setImmediateOrNextTick(tick);
+      async(tick);
     }
   });
 }
