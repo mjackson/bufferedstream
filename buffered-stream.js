@@ -94,7 +94,7 @@ BufferedStream.prototype.pause = function () {
  * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
-  if (this.paused) flushOnNextTick(this);
+  if (this.paused) flushSoon(this);
   this.paused = false;
 };
 
@@ -103,16 +103,18 @@ BufferedStream.prototype.resume = function () {
  * stream is full and should not be written to further until drained, true
  * otherwise.
  */
-BufferedStream.prototype.write = function (chunk, encoding) {
+BufferedStream.prototype.write = function (chunk) {
   if (!this.writable) throw new Error('Stream is not writable');
   if (this.ended) throw new Error('Stream is already ended');
 
-  if (typeof chunk === 'string') chunk = new Buffer(chunk, encoding);
+  if (typeof chunk === 'string') {
+    chunk = new Buffer(chunk, arguments[1]);
+  }
 
   this._buffer.push(chunk);
   this.size += chunk.length;
 
-  flushOnNextTick(this);
+  flushSoon(this);
 
   if (this.full) {
     this._wasFull = true;
@@ -128,18 +130,21 @@ BufferedStream.prototype.write = function (chunk, encoding) {
  * scheduled to be flushed, the end event will fire immediately. Otherwise, it
  * will fire after the next flush.
  */
-BufferedStream.prototype.end = function (chunk, encoding) {
+BufferedStream.prototype.end = function (chunk) {
   if (this.ended) throw new Error('Stream is already ended');
 
-  if (chunk != null) this.write(chunk, encoding);
+  if (chunk != null) {
+    this.write(chunk, arguments[1]);
+  }
+
   this.ended = true;
 
   // Trigger the flush cycle one last time to emit any data that
   // was written before end was called.
-  flushOnNextTick(this);
+  flushSoon(this);
 };
 
-function flushOnNextTick(stream) {
+function flushSoon(stream) {
   if (stream._flushing) return;
   stream._flushing = true;
 
@@ -163,8 +168,7 @@ function flush(stream) {
   if (!stream._buffer) return;
 
   var chunk;
-  while (stream._buffer.length) {
-    chunk = stream._buffer.shift();
+  while (chunk = stream._buffer.shift()) {
     stream.size -= chunk.length;
 
     if (stream.encoding) {
