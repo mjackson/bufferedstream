@@ -1,48 +1,44 @@
 var assert = require('assert');
-var Stream = require('stream');
+var expect = require('expect');
 var BufferedStream = require('../buffered-stream');
 
 describe('A BufferedStream', function () {
   describe('when newly created', function () {
     var stream = new BufferedStream;
 
-    it('is an instance of Stream', function () {
-      assert.ok(stream instanceof Stream);
-    });
-
     it('is empty', function () {
-      assert.ok(stream.empty);
+      assert(stream.empty);
     });
 
     it('is not full', function () {
-      assert.ok(!stream.full);
+      assert(!stream.full);
     });
 
     it('is readable', function () {
-      assert.ok(stream.readable);
+      assert(stream.readable);
     });
 
     it('is writable', function () {
-      assert.ok(stream.writable);
+      assert(stream.writable);
     });
 
     it('is not paused', function () {
-      assert.ok(!stream.paused);
+      assert(!stream.paused);
     });
 
     it('is not ended', function () {
-      assert.ok(!stream.ended);
+      assert(!stream.ended);
     });
 
     it('does not have an encoding', function () {
-      assert.ok(!stream.encoding);
+      assert(!stream.encoding);
     });
   });
 
   describe('with a maxSize of 0', function () {
     it('is not full', function () {
       var stream = new BufferedStream(0);
-      assert.ok(!stream.full);
+      assert(!stream.full);
     });
   });
 
@@ -50,7 +46,7 @@ describe('A BufferedStream', function () {
     it('sets the encoding of the stream', function () {
       var stream = new BufferedStream;
       stream.setEncoding('utf8');
-      assert.equal(stream.encoding, 'utf8');
+      expect(stream.encoding).toEqual('utf8');
     });
   });
 
@@ -68,12 +64,12 @@ describe('A BufferedStream', function () {
       });
 
       stream.end();
-      assert.equal(endWasCalled, false);
+      expect(endWasCalled).toEqual(false);
 
       setTimeout(function () {
         stream.resume();
         setTimeout(function () {
-          assert.equal(endWasCalled, true);
+          expect(endWasCalled).toEqual(true);
           done();
         }, 5);
       }, 0);
@@ -98,7 +94,7 @@ describe('A BufferedStream', function () {
     });
 
     it('emits end only once', function () {
-      assert.equal(count, 1);
+      expect(count).toEqual(1);
     });
   });
 
@@ -106,17 +102,17 @@ describe('A BufferedStream', function () {
     it('throws when a stream is not writable', function () {
       var stream = new BufferedStream;
       stream.writable = false;
-      assert.throws(function () {
+      expect(function () {
         stream.write('test');
-      }, /not writable/);
+      }).toThrow(/not writable/);
     });
 
     it('throws when a stream is already ended', function () {
       var stream = new BufferedStream;
       stream.end();
-      assert.throws(function () {
+      expect(function () {
         stream.write('test');
-      }, /already ended/);
+      }).toThrow(/already ended/);
     });
 
     describe('when called with a string in base64 encoding', function () {
@@ -127,7 +123,7 @@ describe('A BufferedStream', function () {
         stream.end();
 
         collectDataInString(stream, function (string) {
-          assert.equal(string, content);
+          expect(string).toEqual(content);
           callback(null);
         });
       });
@@ -142,13 +138,13 @@ describe('A BufferedStream', function () {
     });
 
     it('makes a stream ended', function () {
-      assert.ok(stream.ended);
+      assert(stream.ended);
     });
 
     it('throws an error when end is called', function () {
-      assert.throws(function () {
+      expect(function () {
         stream.end();
-      }, /already ended/);
+      }).toThrow(/already ended/);
     });
   });
 
@@ -191,9 +187,8 @@ function collectDataFromSource(source, encoding, callback) {
   stream.encoding = encoding;
   collectData(stream, callback);
 
-  if (typeof source.resume === 'function') {
+  if (source && typeof source.resume === 'function')
     source.resume();
-  }
 
   return stream;
 }
@@ -220,7 +215,7 @@ function testSourceType(sourceTypeName, sourceType) {
     it('emits its content as Buffers', function (callback) {
       collectDataFromSource(source, function (data) {
         data.forEach(function (chunk) {
-          assert.ok(chunk instanceof Buffer);
+          assert(chunk instanceof Buffer);
         });
         assert.equal(stringifyData(data), content);
         callback(null);
@@ -243,7 +238,7 @@ function testSourceType(sourceTypeName, sourceType) {
       it('emits its content as Buffers', function (callback) {
         temporarilyPauseThenCollectDataFromSource(source, function (data) {
           data.forEach(function (chunk) {
-            assert.ok(chunk instanceof Buffer);
+            assert(chunk instanceof Buffer);
           });
           assert.equal(stringifyData(data), content);
           callback(null);

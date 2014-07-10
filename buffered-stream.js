@@ -1,9 +1,6 @@
-var util = require('util');
-var Stream = require('stream');
-
-// Use node 0.10's setImmediate for asynchronous operations, otherwise for
-// older versions of node use process.nextTick.
-var async = (typeof setImmediate === 'function') ? setImmediate : process.nextTick;
+var d = require('d');
+var ee = require('event-emitter');
+var hasListeners = require('event-emitter/has-listeners');
 
 /**
  * A readable/writable Stream subclass that buffers data until next tick. The
@@ -24,8 +21,6 @@ var async = (typeof setImmediate === 'function') ? setImmediate : process.nextTi
 function BufferedStream(maxSize, source, sourceEncoding) {
   if (!(this instanceof BufferedStream))
     return new BufferedStream(maxSize, source, sourceEncoding);
-
-  Stream.call(this);
 
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
@@ -55,94 +50,187 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   }
 }
 
-util.inherits(BufferedStream, Stream);
+ee(BufferedStream.prototype);
 
-/**
- * A read-only property that returns true if this stream has no data to emit.
- */
-BufferedStream.prototype.__defineGetter__('empty', function () {
-  return this._buffer == null || this._buffer.length === 0;
-});
+Object.defineProperties(BufferedStream.prototype, {
 
-/**
- * A read-only property that returns true if this stream's buffer is full.
- */
-BufferedStream.prototype.__defineGetter__('full', function () {
-  return this.maxSize < this.size;
-});
+  /**
+   * A read-only property that returns true if this stream has no data to emit.
+   */
+  empty: d.gs(function () {
+    return this._buffer == null || this._buffer.length === 0;
+  }),
 
-/**
- * Sets this stream's encoding. If an encoding is set, this stream will emit
- * strings using that encoding. Otherwise, it emits Buffer objects.
- */
-BufferedStream.prototype.setEncoding = function (encoding) {
-  this.encoding = encoding;
-};
+  /**
+   * A read-only property that returns true if this stream's buffer is full.
+   */
+  full: d.gs(function () {
+    return this.maxSize < this.size;
+  }),
 
-/**
- * Prevents this stream from emitting data events until resume is called.
- * Note: This does not prevent writes to this stream.
- */
-BufferedStream.prototype.pause = function () {
-  this.paused = true;
-};
+  /**
+   * Sets this stream's encoding. If an encoding is set, this stream will emit
+   * strings using that encoding. Otherwise, it emits Buffer objects.
+   */
+  setEncoding: d(function (encoding) {
+    this.encoding = encoding;
+  }),
 
-/**
- * Resumes emitting data events.
- */
-BufferedStream.prototype.resume = function () {
-  if (this.paused)
+  /**
+   * Prevents this stream from emitting data events until resume is called.
+   * Note: This does not prevent writes to this stream.
+   */
+  pause: d(function () {
+    this.paused = true;
+  }),
+
+  /**
+   * Resumes emitting data events.
+   */
+  resume: d(function () {
+    if (this.paused)
+      flushSoon(this);
+
+    this.paused = false;
+  }),
+
+  /**
+   * Pipes all data in this stream through to the given destination stream.
+   * By default the destination stream is ended when this one ends. Set the
+   * "end" option to `false` to disable this behavior.
+   */
+  pipe: d(function () {
+    try {
+      var moduleID = 'stream'; // Foil Browserify.
+      return require(moduleID).prototype.pipe;
+    } catch (error) {
+      // We're not on node, use the fallback.
+    }
+
+    // This function was copied out of node's lib/stream.js and
+    // modified for use in other JavaScript environments.
+    return function (dest, options) {
+      var source = this;
+
+      function ondata(chunk) {
+        if (dest.writable) {
+          if (false === dest.write(chunk) && source.pause) {
+            source.pause();
+          }
+        }
+      }
+
+      source.on('data', ondata);
+
+      function ondrain() {
+        if (source.readable && source.resume) {
+          source.resume();
+        }
+      }
+
+      dest.on('drain', ondrain);
+
+      // If the 'end' option is not supplied, dest.end() will be called when
+      // source gets the 'end' or 'close' events. Only dest.end() once.
+      if (!dest._isStdio && (!options || options.end !== false)) {
+        source.on('end', onend);
+      }
+
+      var didOnEnd = false;
+      function onend() {
+        if (didOnEnd) return;
+        didOnEnd = true;
+
+        dest.end();
+      }
+
+      // don't leave dangling pipes when there are errors.
+      function onerror(er) {
+        cleanup();
+        if (!hasListeners(this, 'error')) {
+          throw er; // Unhandled stream error in pipe.
+        }
+      }
+
+      source.on('error', onerror);
+      dest.on('error', onerror);
+
+      // remove all the event listeners that were added.
+      function cleanup() {
+        source.removeListener('data', ondata);
+        dest.removeListener('drain', ondrain);
+
+        source.removeListener('end', onend);
+
+        source.removeListener('error', onerror);
+        dest.removeListener('error', onerror);
+
+        source.removeListener('end', cleanup);
+      }
+
+      source.on('end', cleanup);
+
+      dest.emit('pipe', source);
+
+      // Allow for unix-like usage: A.pipe(B).pipe(C)
+      return dest;
+    };
+  }()),
+
+  // For convenience when working on node.
+  addListener: d(ee.methods.on),
+  removeListener: d(ee.methods.off),
+
+  /**
+   * Writes the given chunk of data to this stream. Returns false if this
+   * stream is full and should not be written to further until drained, true
+   * otherwise.
+   */
+  write: d(function (chunk) {
+    if (!this.writable)
+      throw new Error('BufferedStream is not writable');
+
+    if (this.ended)
+      throw new Error('BufferedStream is already ended');
+
+    if (typeof chunk === 'string')
+      chunk = new Buffer(chunk, arguments[1]);
+
+    this._buffer.push(chunk);
+    this.size += chunk.length;
+
     flushSoon(this);
 
-  this.paused = false;
-};
+    if (this.full) {
+      this._wasFull = true;
+      return false;
+    }
 
-/**
- * Writes the given chunk of data to this stream. Returns false if this
- * stream is full and should not be written to further until drained, true
- * otherwise.
- */
-BufferedStream.prototype.write = function (chunk) {
-  if (!this.writable)
-    throw new Error('BufferedStream is not writable');
+    return true;
+  }),
 
-  if (this.ended)
-    throw new Error('BufferedStream is already ended');
+  /**
+   * Writes the given chunk to this stream and queues the end event to be
+   * called as soon as soon as possible. If the stream is not currently
+   * scheduled to be flushed, the end event will fire immediately. Otherwise, it
+   * will fire after the next flush.
+   */
+  end: d(function (chunk) {
+    if (this.ended) throw new Error('Stream is already ended');
 
-  if (typeof chunk === 'string')
-    chunk = new Buffer(chunk, arguments[1]);
+    if (chunk != null)
+      this.write(chunk, arguments[1]);
 
-  this._buffer.push(chunk);
-  this.size += chunk.length;
+    this.ended = true;
 
-  flushSoon(this);
+    // Trigger the flush cycle one last time to emit
+    // any data that was written before end was called.
+    flushSoon(this);
+  })
 
-  if (this.full) {
-    this._wasFull = true;
-    return false;
-  }
+});
 
-  return true;
-};
-
-/**
- * Writes the given chunk to this stream and queues the end event to be
- * called as soon as soon as possible. If the stream is not currently
- * scheduled to be flushed, the end event will fire immediately. Otherwise, it
- * will fire after the next flush.
- */
-BufferedStream.prototype.end = function (chunk) {
-  if (this.ended) throw new Error('Stream is already ended');
-
-  if (chunk != null)
-    this.write(chunk, arguments[1]);
-
-  this.ended = true;
-
-  // Trigger the flush cycle one last time to emit
-  // any data that was written before end was called.
-  flushSoon(this);
-};
+require('setimmediate');
 
 function flushSoon(stream) {
   if (stream._flushing)
@@ -150,7 +238,7 @@ function flushSoon(stream) {
 
   stream._flushing = true;
 
-  async(function tick() {
+  setImmediate(function tick() {
     if (stream.paused) {
       stream._flushing = false;
       return;
@@ -161,7 +249,7 @@ function flushSoon(stream) {
     if (stream.empty) {
       stream._flushing = false;
     } else {
-      async(tick);
+      setImmediate(tick);
     }
   });
 }

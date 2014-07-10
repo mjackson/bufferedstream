@@ -14,8 +14,13 @@
   "engines": {
     "node": ">=0.4.7"
   },
-  "dependencies": {},
+  "dependencies": {
+    "d": "^0.1.1",
+    "event-emitter": "^0.3.1",
+    "setimmediate": "^1.0.2"
+  },
   "devDependencies": {
-    "mocha": "1.5.0"
+    "expect": "^0.1.1",
+    "mocha": "^1.20.1"
   }
 }
