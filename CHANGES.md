@@ -1,3 +1,7 @@
+= HEAD
+
+  * Introduced browser compatibility, removed dependency on node
+
 = 1.6.0 / 2013-03-18
 
   * Use node 0.10's setImmediate instead of process.nextTick (thanks @jeffbski).
