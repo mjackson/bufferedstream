@@ -1,11 +1,11 @@
 {
   "author": "Michael Jackson <mjijackson@gmail.com>",
   "name": "bufferedstream",
-  "description": "A stream class for node that reliably buffers until next tick",
+  "description": "A JavaScript stream class that reliably buffers until next tick",
   "version": "1.6.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/mjijackson/bufferedstream.git"
+    "url": "https://github.com/mjackson/bufferedstream.git"
   },
   "main": "./buffered-stream.js",
   "scripts": {

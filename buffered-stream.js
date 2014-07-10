@@ -5,8 +5,6 @@ var Stream = require('stream');
 // older versions of node use process.nextTick.
 var async = (typeof setImmediate === 'function') ? setImmediate : process.nextTick;
 
-module.exports = BufferedStream;
-
 /**
  * A readable/writable Stream subclass that buffers data until next tick. The
  * maxSize determines the number of bytes the buffer can hold before it is
@@ -24,9 +22,8 @@ module.exports = BufferedStream;
  * to the buffer so that no data is lost.
  */
 function BufferedStream(maxSize, source, sourceEncoding) {
-  if (!(this instanceof BufferedStream)) {
+  if (!(this instanceof BufferedStream))
     return new BufferedStream(maxSize, source, sourceEncoding);
-  }
 
   Stream.call(this);
 
@@ -50,7 +47,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this._wasFull = false;
 
   if (typeof source !== 'undefined') {
-    if (source instanceof Stream) {
+    if (source && typeof source.pipe === 'function') {
       source.pipe(this);
     } else {
       this.end(source, sourceEncoding);
@@ -94,7 +91,9 @@ BufferedStream.prototype.pause = function () {
  * Resumes emitting data events.
  */
 BufferedStream.prototype.resume = function () {
-  if (this.paused) flushSoon(this);
+  if (this.paused)
+    flushSoon(this);
+
   this.paused = false;
 };
 
@@ -104,12 +103,14 @@ BufferedStream.prototype.resume = function () {
  * otherwise.
  */
 BufferedStream.prototype.write = function (chunk) {
-  if (!this.writable) throw new Error('Stream is not writable');
-  if (this.ended) throw new Error('Stream is already ended');
+  if (!this.writable)
+    throw new Error('BufferedStream is not writable');
 
-  if (typeof chunk === 'string') {
+  if (this.ended)
+    throw new Error('BufferedStream is already ended');
+
+  if (typeof chunk === 'string')
     chunk = new Buffer(chunk, arguments[1]);
-  }
 
   this._buffer.push(chunk);
   this.size += chunk.length;
@@ -133,19 +134,20 @@ BufferedStream.prototype.write = function (chunk) {
 BufferedStream.prototype.end = function (chunk) {
   if (this.ended) throw new Error('Stream is already ended');
 
-  if (chunk != null) {
+  if (chunk != null)
     this.write(chunk, arguments[1]);
-  }
 
   this.ended = true;
 
-  // Trigger the flush cycle one last time to emit any data that
-  // was written before end was called.
+  // Trigger the flush cycle one last time to emit
+  // any data that was written before end was called.
   flushSoon(this);
 };
 
 function flushSoon(stream) {
-  if (stream._flushing) return;
+  if (stream._flushing)
+    return;
+
   stream._flushing = true;
 
   async(function tick() {
@@ -165,7 +167,8 @@ function flushSoon(stream) {
 }
 
 function flush(stream) {
-  if (!stream._buffer) return;
+  if (!stream._buffer)
+    return;
 
   var chunk;
   while (chunk = stream._buffer.shift()) {
@@ -178,7 +181,8 @@ function flush(stream) {
     }
 
     // If the stream was paused in a data event handler, break.
-    if (stream.paused) break;
+    if (stream.paused)
+      break;
   }
 
   if (stream.ended && !stream.paused) {
@@ -189,3 +193,5 @@ function flush(stream) {
     stream.emit('drain');
   }
 }
+
+module.exports = BufferedStream;
