@@ -1,4 +1,8 @@
-= 2.0.0 / 2014-07-10
+= HEAD
+
+  * Maximum stream length defaults to 64k
+
+= 2.1.0 / 2014-07-10
 
   * Introduced browser compatibility
   * Removed dependency on node

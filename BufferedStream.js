@@ -8,17 +8,21 @@ if (typeof setImmediate === 'undefined')
   require('setimmediate');
 
 /**
+ * The default maximum buffer size.
+ */
+var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
+
+/**
  * A flexible event emitter for binary data that reliably emits data on the
  * next turn of the event loop.
  *
  * The maxSize determines the number of bytes the buffer can hold before it is
- * considered "full". This argument may be omitted to indicate this stream has
- * no maximum size.
+ * considered "full". Defaults to 64k.
  *
  * The source and sourceEncoding arguments may be used to easily wrap this
  * stream around another, or a simple string. If the source is another stream,
- * it is piped to this stream. If it's a string, it is used as the entire
- * contents of this stream and passed to end.
+ * it is piped to this stream. If it's a string or binary data, it is used as
+ * the entire contents of the stream.
  *
  * NOTE: The maxSize is a soft limit that is only used to determine when calls
  * to write will return false, indicating to streams that are writing to this
@@ -32,7 +36,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
     source = maxSize;
-    maxSize = Infinity;
+    maxSize = DEFAULT_MAX_SIZE;
   }
 
   // Public interface.
@@ -62,24 +66,6 @@ ee(BufferedStream.prototype);
 Object.defineProperties(BufferedStream.prototype, {
 
   /**
-   * For compat with node streams && pipe.
-   */
-  addListener: d(ee.methods.on),
-  removeListener: d(ee.methods.off),
-  removeAllListeners: d(function () {
-    allOff(this);
-    return this;
-  }),
-
-  /**
-   * Sets this stream's encoding. If an encoding is set, this stream will emit
-   * strings using that encoding. Otherwise, it emits binary objects.
-   */
-  setEncoding: d(function (encoding) {
-    this.encoding = encoding;
-  }),
-
-  /**
    * A read-only property that returns true if this stream has no data to emit.
    */
   empty: d.gs(function () {
@@ -91,6 +77,14 @@ Object.defineProperties(BufferedStream.prototype, {
    */
   full: d.gs(function () {
     return this.maxSize < this.size;
+  }),
+
+  /**
+   * Sets this stream's encoding. If an encoding is set, this stream will emit
+   * strings using that encoding. Otherwise, it emits binary objects.
+   */
+  setEncoding: d(function (encoding) {
+    this.encoding = encoding;
   }),
 
   /**
@@ -185,6 +179,14 @@ Object.defineProperties(BufferedStream.prototype, {
 
     // Allow for unix-like usage: A.pipe(B).pipe(C)
     return dest;
+  }),
+
+  // For compat with node streams && pipe.
+  addListener: d(ee.methods.on),
+  removeListener: d(ee.methods.off),
+  removeAllListeners: d(function () {
+    allOff(this);
+    return this;
   }),
 
   /**
