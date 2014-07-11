@@ -9,7 +9,7 @@
   },
   "main": "./modules",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha spec"
   },
   "engines": {
     "node": ">=0.4.7"
