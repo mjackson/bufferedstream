@@ -3,6 +3,9 @@ var bops = require('bops');
 var ee = require('event-emitter');
 var hasListeners = require('event-emitter/has-listeners');
 
+if (typeof setImmediate === 'undefined')
+  require('setimmediate');
+
 /**
  * A flexible event emitter for binary data that reliably emits data on the
  * next turn of the event loop.
@@ -220,8 +223,6 @@ Object.defineProperties(BufferedStream.prototype, {
   })
 
 });
-
-require('setimmediate');
 
 function flushSoon(stream) {
   if (stream._flushing)
