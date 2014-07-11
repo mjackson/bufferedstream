@@ -1,10 +1,13 @@
 var d = require('d');
+var bops = require('bops');
 var ee = require('event-emitter');
 var hasListeners = require('event-emitter/has-listeners');
 
 /**
- * A readable/writable Stream subclass that buffers data until next tick. The
- * maxSize determines the number of bytes the buffer can hold before it is
+ * A flexible event emitter for binary data that reliably emits data on the
+ * next turn of the event loop.
+ *
+ * The maxSize determines the number of bytes the buffer can hold before it is
  * considered "full". This argument may be omitted to indicate this stream has
  * no maximum size.
  *
@@ -37,7 +40,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this.readable = true;
   this.writable = true;
 
-  this._buffer = [];
+  this._chunks = [];
   this._flushing = false;
   this._wasFull = false;
 
@@ -55,10 +58,18 @@ ee(BufferedStream.prototype);
 Object.defineProperties(BufferedStream.prototype, {
 
   /**
+   * Sets this stream's encoding. If an encoding is set, this stream will emit
+   * strings using that encoding. Otherwise, it emits binary objects.
+   */
+  setEncoding: d(function (encoding) {
+    this.encoding = encoding;
+  }),
+
+  /**
    * A read-only property that returns true if this stream has no data to emit.
    */
   empty: d.gs(function () {
-    return this._buffer == null || this._buffer.length === 0;
+    return this._chunks == null || this._chunks.length === 0;
   }),
 
   /**
@@ -66,14 +77,6 @@ Object.defineProperties(BufferedStream.prototype, {
    */
   full: d.gs(function () {
     return this.maxSize < this.size;
-  }),
-
-  /**
-   * Sets this stream's encoding. If an encoding is set, this stream will emit
-   * strings using that encoding. Otherwise, it emits Buffer objects.
-   */
-  setEncoding: d(function (encoding) {
-    this.encoding = encoding;
   }),
 
   /**
@@ -181,11 +184,11 @@ Object.defineProperties(BufferedStream.prototype, {
     if (this.ended)
       throw new Error('BufferedStream is already ended');
 
-    if (typeof chunk === 'string')
-      chunk = new Buffer(chunk, arguments[1]);
+    if (!bops.is(chunk))
+      chunk = bops.from(chunk, arguments[1]);
 
-    this._buffer.push(chunk);
-    this.size += chunk.length;
+    this._chunks.push(chunk);
+    this.size += getByteLength(chunk);
 
     flushSoon(this);
 
@@ -243,15 +246,15 @@ function flushSoon(stream) {
 }
 
 function flush(stream) {
-  if (!stream._buffer)
+  if (!stream._chunks)
     return;
 
   var chunk;
-  while (chunk = stream._buffer.shift()) {
-    stream.size -= chunk.length;
+  while (chunk = stream._chunks.shift()) {
+    stream.size -= getByteLength(chunk);
 
     if (stream.encoding) {
-      stream.emit('data', chunk.toString(stream.encoding));
+      stream.emit('data', bops.to(chunk, stream.encoding));
     } else {
       stream.emit('data', chunk);
     }
@@ -262,12 +265,19 @@ function flush(stream) {
   }
 
   if (stream.ended && !stream.paused) {
-    stream._buffer = null;
+    stream._chunks = null;
     stream.emit('end');
   } else if (stream._wasFull && !stream.full) {
     stream._wasFull = false;
     stream.emit('drain');
   }
+}
+
+function getByteLength(chunk) {
+  if (typeof chunk.byteLength !== 'undefined')
+    return chunk.byteLength;
+
+  return chunk.length;
 }
 
 module.exports = BufferedStream;

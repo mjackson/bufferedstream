@@ -1,5 +1,6 @@
 var assert = require('assert');
 var expect = require('expect');
+var bops = require('bops');
 var BufferedStream = require('../modules');
 
 describe('A BufferedStream', function () {
@@ -119,7 +120,7 @@ describe('A BufferedStream', function () {
       it('uses the proper encoding', function (callback) {
         var content = 'hello';
         var stream = new BufferedStream;
-        stream.write(new Buffer(content).toString('base64'), 'base64');
+        stream.write(bops.to(bops.from(content), 'base64'), 'base64');
         stream.end();
 
         collectDataInString(stream, function (string) {
@@ -149,8 +150,10 @@ describe('A BufferedStream', function () {
   });
 
   testSourceType('String', String);
-  testSourceType('Buffer', Buffer);
   testSourceType('BufferedStream', BufferedStream);
+
+  if (typeof Buffer !== 'undefined')
+    testSourceType('Buffer', Buffer);
 });
 
 function collectData(stream, callback) {

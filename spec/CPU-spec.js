@@ -1,9 +1,10 @@
+var bops = require('bops');
 var BufferedStream = require('../modules');
 
 var stream = new BufferedStream();
 
 stream.on('data', function (chunk) {
-  console.log(chunk.toString());
+  console.log(bops.to(chunk));
 });
 
 stream.on('end', function () {

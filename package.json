@@ -15,6 +15,7 @@
     "node": ">=0.4.7"
   },
   "dependencies": {
+    "bops": "^0.1.1",
     "d": "^0.1.1",
     "event-emitter": "^0.3.1",
     "setimmediate": "^1.0.2"
