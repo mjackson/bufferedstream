@@ -1,10 +1,8 @@
-[![build status](https://secure.travis-ci.org/mjijackson/bufferedstream.png)](http://travis-ci.org/mjijackson/bufferedstream)
+[![build status](https://secure.travis-ci.org/mjackson/bufferedstream.png)](http://travis-ci.org/mjackson/bufferedstream)
 
-BufferedStream is a reliable base class for streams in node programs that buffers data until the next tick of the event loop.
+BufferedStream is a flexible event emitter for binary data that reliably emits data on the next turn of the event loop. This greatly enhances the usability of streams by making it easy to setup listeners in the same turn of the event loop before data is emitted.
 
-## Rationale
-
-The details of streams are still being worked out in node core. As of this writing there are several different types of streams in node, including some objects that do not actually inherit from Stream. The goal of this library is to iron out the differences between the various stream-like objects and give user code a reliable, documented API they can use now. If the situation ever improves in node core (which we all hope it will) this code may become obsolete.
+BufferedStream is designed to operate efficiently in both node.js and browsers.
 
 ## Installation
 
@@ -14,7 +12,7 @@ Using [npm](http://npmjs.org):
 
 ## Usage
 
-The key feature of this class is that anything you write to the stream in the current tick of the event loop is buffered until the next tick. This allows you to register event handlers, pause the stream, etc. reliably without losing any data.
+The key feature of this class is that anything you write to the stream in the current turn of the event loop is buffered until the next one. This allows you to register event handlers, pause the stream, etc. reliably without losing any data.
 
 ```javascript
 var BufferedStream = require('bufferedstream');
@@ -36,15 +34,15 @@ The `BufferedStream` constructor may also accept a "source" which may be another
 
 Please see the source code for more information. The module is small enough (and well-documented) that it should be easy to digest in a quick skim.
 
-## Tests
+## Specs
 
-Run the tests with [mocha](http://visionmedia.github.com/mocha/):
+Run the specs with [mocha](http://visionmedia.github.com/mocha/):
 
-    $ mocha test
+    $ mocha spec
 
 ## License
 
-Copyright 2012 Michael Jackson
+Copyright 2014 Michael Jackson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
