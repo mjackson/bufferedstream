@@ -1,6 +1,7 @@
-= HEAD
+= 2.0.0 / 2014-07-10
 
-  * Introduced browser compatibility, removed dependency on node
+  * Introduced browser compatibility
+  * Removed dependency on node
 
 = 1.6.0 / 2013-03-18
 

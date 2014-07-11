@@ -2,7 +2,7 @@
   "name": "bufferedstream",
   "description": "A solid, reliable stream class for JavaScript",
   "author": "Michael Jackson <mjijackson@gmail.com>",
-  "version": "1.6.0",
+  "version": "2.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/mjackson/bufferedstream.git"
