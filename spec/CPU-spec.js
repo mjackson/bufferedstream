@@ -1,4 +1,4 @@
-var BufferedStream = require('../BufferedStream');
+var BufferedStream = require('../modules');
 
 var stream = new BufferedStream();
 

@@ -98,88 +98,76 @@ Object.defineProperties(BufferedStream.prototype, {
    * Pipes all data in this stream through to the given destination stream.
    * By default the destination stream is ended when this one ends. Set the
    * "end" option to `false` to disable this behavior.
+   *
+   * This function was copied out of node's lib/stream.js and modified for
+   * use in other JavaScript environments.
    */
-  pipe: d(function () {
-    try {
-      var moduleID = 'stream'; // Foil Browserify.
-      return require(moduleID).prototype.pipe;
-    } catch (error) {
-      // We're not on node, use the fallback.
+  pipe: d(function (dest, options) {
+    var source = this;
+
+    function ondata(chunk) {
+      if (dest.writable) {
+        if (false === dest.write(chunk) && source.pause) {
+          source.pause();
+        }
+      }
     }
 
-    // This function was copied out of node's lib/stream.js and
-    // modified for use in other JavaScript environments.
-    return function (dest, options) {
-      var source = this;
+    source.on('data', ondata);
 
-      function ondata(chunk) {
-        if (dest.writable) {
-          if (false === dest.write(chunk) && source.pause) {
-            source.pause();
-          }
-        }
+    function ondrain() {
+      if (source.readable && source.resume) {
+        source.resume();
       }
+    }
 
-      source.on('data', ondata);
+    dest.on('drain', ondrain);
 
-      function ondrain() {
-        if (source.readable && source.resume) {
-          source.resume();
-        }
+    // If the 'end' option is not supplied, dest.end() will be called when
+    // source gets the 'end' or 'close' events. Only dest.end() once.
+    if (!dest._isStdio && (!options || options.end !== false)) {
+      source.on('end', onend);
+    }
+
+    var didOnEnd = false;
+    function onend() {
+      if (didOnEnd) return;
+      didOnEnd = true;
+
+      dest.end();
+    }
+
+    // don't leave dangling pipes when there are errors.
+    function onerror(er) {
+      cleanup();
+      if (!hasListeners(this, 'error')) {
+        throw er; // Unhandled stream error in pipe.
       }
+    }
 
-      dest.on('drain', ondrain);
+    source.on('error', onerror);
+    dest.on('error', onerror);
 
-      // If the 'end' option is not supplied, dest.end() will be called when
-      // source gets the 'end' or 'close' events. Only dest.end() once.
-      if (!dest._isStdio && (!options || options.end !== false)) {
-        source.on('end', onend);
-      }
+    // remove all the event listeners that were added.
+    function cleanup() {
+      source.off('data', ondata);
+      dest.off('drain', ondrain);
 
-      var didOnEnd = false;
-      function onend() {
-        if (didOnEnd) return;
-        didOnEnd = true;
+      source.off('end', onend);
 
-        dest.end();
-      }
+      source.off('error', onerror);
+      dest.off('error', onerror);
 
-      // don't leave dangling pipes when there are errors.
-      function onerror(er) {
-        cleanup();
-        if (!hasListeners(this, 'error')) {
-          throw er; // Unhandled stream error in pipe.
-        }
-      }
+      source.off('end', cleanup);
+    }
 
-      source.on('error', onerror);
-      dest.on('error', onerror);
+    source.on('end', cleanup);
 
-      // remove all the event listeners that were added.
-      function cleanup() {
-        source.removeListener('data', ondata);
-        dest.removeListener('drain', ondrain);
+    dest.emit('pipe', source);
 
-        source.removeListener('end', onend);
-
-        source.removeListener('error', onerror);
-        dest.removeListener('error', onerror);
-
-        source.removeListener('end', cleanup);
-      }
-
-      source.on('end', cleanup);
-
-      dest.emit('pipe', source);
-
-      // Allow for unix-like usage: A.pipe(B).pipe(C)
-      return dest;
-    };
-  }()),
-
-  // For convenience when working on node.
-  addListener: d(ee.methods.on),
-  removeListener: d(ee.methods.off),
+    // Allow for unix-like usage: A.pipe(B).pipe(C)
+    return dest;
+  }),
 
   /**
    * Writes the given chunk of data to this stream. Returns false if this

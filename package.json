@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/mjackson/bufferedstream.git"
   },
-  "main": "./BufferedStream.js",
+  "main": "./modules",
   "scripts": {
     "test": "mocha test"
   },
