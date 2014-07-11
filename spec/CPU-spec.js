@@ -1,5 +1,5 @@
 var bops = require('bops');
-var BufferedStream = require('../modules');
+var BufferedStream = require('../BufferedStream');
 
 var stream = new BufferedStream();
 

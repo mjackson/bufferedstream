@@ -1,7 +1,7 @@
 var assert = require('assert');
 var expect = require('expect');
 var bops = require('bops');
-var BufferedStream = require('../modules');
+var BufferedStream = require('../BufferedStream');
 
 describe('A BufferedStream', function () {
   describe('when newly created', function () {

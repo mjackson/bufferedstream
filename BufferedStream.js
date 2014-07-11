@@ -1,6 +1,7 @@
 var d = require('d');
 var bops = require('bops');
 var ee = require('event-emitter');
+var allOff = require('event-emitter/all-off');
 var hasListeners = require('event-emitter/has-listeners');
 
 if (typeof setImmediate === 'undefined')
@@ -59,6 +60,16 @@ function BufferedStream(maxSize, source, sourceEncoding) {
 ee(BufferedStream.prototype);
 
 Object.defineProperties(BufferedStream.prototype, {
+
+  /**
+   * For compat with node streams && pipe.
+   */
+  addListener: d(ee.methods.on),
+  removeListener: d(ee.methods.off),
+  removeAllListeners: d(function () {
+    allOff(this);
+    return this;
+  }),
 
   /**
    * Sets this stream's encoding. If an encoding is set, this stream will emit
@@ -129,18 +140,18 @@ Object.defineProperties(BufferedStream.prototype, {
 
     dest.on('drain', ondrain);
 
-    // If the 'end' option is not supplied, dest.end() will be called when
-    // source gets the 'end' or 'close' events. Only dest.end() once.
-    if (!dest._isStdio && (!options || options.end !== false)) {
-      source.on('end', onend);
-    }
-
     var didOnEnd = false;
     function onend() {
       if (didOnEnd) return;
       didOnEnd = true;
 
       dest.end();
+    }
+
+    // If the 'end' option is not supplied, dest.end() will be called when
+    // source gets the 'end' or 'close' events. Only dest.end() once.
+    if (!dest._isStdio && (!options || options.end !== false)) {
+      source.on('end', onend);
     }
 
     // don't leave dangling pipes when there are errors.
@@ -156,18 +167,19 @@ Object.defineProperties(BufferedStream.prototype, {
 
     // remove all the event listeners that were added.
     function cleanup() {
-      source.off('data', ondata);
-      dest.off('drain', ondrain);
+      source.removeListener('data', ondata);
+      dest.removeListener('drain', ondrain);
 
-      source.off('end', onend);
+      source.removeListener('end', onend);
 
-      source.off('error', onerror);
-      dest.off('error', onerror);
+      source.removeListener('error', onerror);
+      dest.removeListener('error', onerror);
 
-      source.off('end', cleanup);
+      source.removeListener('end', cleanup);
     }
 
     source.on('end', cleanup);
+    dest.on('close', cleanup);
 
     dest.emit('pipe', source);
 
@@ -210,7 +222,8 @@ Object.defineProperties(BufferedStream.prototype, {
    * will fire after the next flush.
    */
   end: d(function (chunk) {
-    if (this.ended) throw new Error('Stream is already ended');
+    if (this.ended)
+      throw new Error('BufferedStream is already ended');
 
     if (chunk != null)
       this.write(chunk, arguments[1]);
