@@ -13,6 +13,15 @@ if (typeof setImmediate === 'undefined')
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
 
 /**
+ * The set of valid encodings.
+ */
+var VALID_ENCODINGS = {
+  utf8: true,
+  hex: true,
+  base64: true
+};
+
+/**
  * A flexible event emitter for binary data that reliably emits data on the
  * next turn of the event loop.
  *
@@ -82,8 +91,13 @@ Object.defineProperties(BufferedStream.prototype, {
   /**
    * Sets this stream's encoding. If an encoding is set, this stream will emit
    * strings using that encoding. Otherwise, it emits binary objects.
+   *
+   * Supported encodings are: "utf8", "hex", and "base64".
    */
   setEncoding: d(function (encoding) {
+    if (VALID_ENCODINGS[encoding] !== true)
+      throw new Error('Invalid encoding: ' + encoding);
+
     this.encoding = encoding;
   }),
 
