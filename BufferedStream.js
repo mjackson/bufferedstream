@@ -294,9 +294,11 @@ function flush(stream) {
       break;
   }
 
-  if (stream.ended && !stream.paused) {
-    stream._chunks = null;
-    stream.emit('end');
+  if (stream.ended) {
+    if (!stream.paused) {
+      stream._chunks = null;
+      stream.emit('end');
+    }
   } else if (stream._wasFull && !stream.full) {
     stream._wasFull = false;
     stream.emit('drain');

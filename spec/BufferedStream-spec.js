@@ -77,6 +77,40 @@ describe('A BufferedStream', function () {
     });
   });
 
+  describe('that is ended but paused in a "data" event handler', function () {
+    var stream;
+    beforeEach(function () {
+      stream = new BufferedStream(3);
+    });
+
+    it('does not emit "drain" events', function (done) {
+      var endWasCalled = false;
+      stream.on('end', function () {
+        endWasCalled = true;
+      });
+
+      var drainWasCalled = false;
+      stream.on('drain', function () {
+        drainWasCalled = true;
+      });
+
+      stream.end('hello');
+      assert(stream.full);
+
+      stream.on('data', function () {
+        stream.pause();
+        setTimeout(function () {
+          stream.resume();
+          setTimeout(function () {
+            expect(endWasCalled).toEqual(true);
+            expect(drainWasCalled).toEqual(false);
+            done();
+          });
+        });
+      });
+    });
+  });
+
   describe('when paused and resumed multiple times', function () {
     var count;
     beforeEach(function (callback) {
