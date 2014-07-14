@@ -1,5 +1,6 @@
-= HEAD
+= 2.2.0 / 2014-07-14
 
+  * Don't emit "drain" when stream is already ended
   * Maximum stream length defaults to 64k
 
 = 2.1.0 / 2014-07-10
