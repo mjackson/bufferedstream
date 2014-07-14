@@ -105,8 +105,8 @@ describe('A BufferedStream', function () {
             expect(endWasCalled).toEqual(true);
             expect(drainWasCalled).toEqual(false);
             done();
-          });
-        });
+          }, 5);
+        }, 5);
       });
     });
   });
