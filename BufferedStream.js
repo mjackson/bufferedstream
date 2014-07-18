@@ -61,8 +61,8 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this._flushing = false;
   this._wasFull = false;
 
-  if (typeof source !== 'undefined') {
-    if (source && typeof source.pipe === 'function') {
+  if (source != null) {
+    if (typeof source.pipe === 'function') {
       source.pipe(this);
     } else {
       this.end(source, sourceEncoding);
