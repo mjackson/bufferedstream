@@ -4,9 +4,6 @@ var ee = require('event-emitter');
 var allOff = require('event-emitter/all-off');
 var hasListeners = require('event-emitter/has-listeners');
 
-if (typeof setImmediate === 'undefined')
-  require('setimmediate');
-
 /**
  * The default maximum buffer size.
  */
@@ -252,6 +249,8 @@ Object.defineProperties(BufferedStream.prototype, {
   })
 
 });
+
+require('setimmediate');
 
 function flushSoon(stream) {
   if (stream._flushing)
