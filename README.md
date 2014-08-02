@@ -34,6 +34,10 @@ setTimeout(function () {
 
 The `BufferedStream` constructor may also accept a "source" which may be another stream that will be piped directly through to this stream or a string. This is useful for wrapping various stream-like objects and normalizing their behavior across implementations.
 
+```js
+var stream = new BufferedStream(anotherStream);
+```
+
 Please see the source code for more information. The module is small enough (and well-documented) that it should be easy to digest in a quick skim.
 
 ### Specs
