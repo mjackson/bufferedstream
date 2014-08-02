@@ -128,19 +128,15 @@ Object.defineProperties(BufferedStream.prototype, {
     var source = this;
 
     function ondata(chunk) {
-      if (dest.writable) {
-        if (false === dest.write(chunk) && source.pause) {
-          source.pause();
-        }
-      }
+      if (dest.writable && false === dest.write(chunk))
+        source.pause();
     }
 
     source.on('data', ondata);
 
     function ondrain() {
-      if (source.readable && source.resume) {
+      if (source.readable)
         source.resume();
-      }
     }
 
     dest.on('drain', ondrain);
