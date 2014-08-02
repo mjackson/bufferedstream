@@ -233,9 +233,8 @@ Object.defineProperties(BufferedStream.prototype, {
 
   /**
    * Writes the given chunk to this stream and queues the end event to be
-   * called as soon as soon as possible. If the stream is not currently
-   * scheduled to be flushed, the end event will fire immediately. Otherwise, it
-   * will fire after the next flush.
+   * called as soon as soon as the stream is empty. Calling write() after
+   * end() is an error.
    */
   end: d(function (chunk) {
     if (this.ended)
