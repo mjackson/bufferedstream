@@ -154,16 +154,14 @@ Object.defineProperties(BufferedStream.prototype, {
 
     // If the 'end' option is not supplied, dest.end() will be called when
     // source gets the 'end' or 'close' events. Only dest.end() once.
-    if (!dest._isStdio && (!options || options.end !== false)) {
+    if (!dest._isStdio && (!options || options.end !== false))
       source.on('end', onend);
-    }
 
     // don't leave dangling pipes when there are errors.
-    function onerror(er) {
+    function onerror(error) {
       cleanup();
-      if (!hasListeners(this, 'error')) {
-        throw er; // Unhandled stream error in pipe.
-      }
+      if (!hasListeners(this, 'error'))
+        throw error; // Unhandled stream error in pipe.
     }
 
     source.on('error', onerror);
@@ -188,7 +186,7 @@ Object.defineProperties(BufferedStream.prototype, {
     dest.emit('pipe', source);
 
     // Mimic the behavior of node v2 streams where pipe() resumes the flow.
-    // This also lets us avoid having to do stream.resume() all over the place.
+    // This lets us avoid having to do stream.resume() all over the place.
     source.resume();
 
     // Allow for unix-like usage: A.pipe(B).pipe(C)
