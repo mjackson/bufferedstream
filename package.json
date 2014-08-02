@@ -1,6 +1,6 @@
 {
   "name": "bufferedstream",
-  "description": "A reliable read/write stream class for node.js and browsers",
+  "description": "A robust stream implementation for node.js and the browser",
   "author": "Michael Jackson",
   "version": "2.2.0",
   "repository": {

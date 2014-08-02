@@ -19,8 +19,8 @@ var VALID_ENCODINGS = {
 };
 
 /**
- * A flexible event emitter for binary data that reliably emits data on the
- * next turn of the event loop.
+ * A robust stream implementation for node.js and the browser based on the
+ * initial version of the stream API in Node.js.
  *
  * The maxSize determines the number of bytes the buffer can hold before it is
  * considered "full". Defaults to 64k.

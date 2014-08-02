@@ -1,8 +1,8 @@
 [![build status](https://secure.travis-ci.org/mjackson/bufferedstream.png)](http://travis-ci.org/mjackson/bufferedstream)
 
-[BufferedStream](https://github.com/mjackson/bufferedstream) is a reliable read/write stream class for node.js and browsers. All data that is written to a BufferedStream is buffered until the next turn of the event loop. This greatly enhances the usability of streams by making it easy to setup listeners in the same turn of the event loop before data is emitted.
+[BufferedStream](https://github.com/mjackson/bufferedstream) is a robust stream implementation for node.js and the browser based on the initial version of the stream API in Node.js. All data that is written to a BufferedStream is buffered until the next turn of the event loop. This greatly enhances the usability of streams by making it easy to setup listeners in the same turn of the event loop before data is emitted.
 
-This class follows the first version of the node streams API, which is powerful because of its simplicity. Node has since moved on to other, much more complex streams implementations, but there never was a problem with the initial API. The only problems were with node's implementation. For example, streams did not always wait until the next tick to emit data. Also, some streams did not respect `pause`/`resume` semantics.
+The implementation follows the first version of the node streams API, which is powerful because of its simplicity. Node has since moved on to other, much more complex streams implementations, but there never was a problem with the initial API. The only problems were with node's implementation. For example, streams did not always wait until the next tick to emit data. Also, some streams did not respect `pause`/`resume` semantics.
 
 BufferedStream addresses these problems by providing a well-tested, performant implementation that preserves the original streams API and works in both node.js and browsers.
 
