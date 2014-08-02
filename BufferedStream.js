@@ -61,6 +61,9 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   if (source != null) {
     if (typeof source.pipe === 'function') {
       source.pipe(this);
+
+      if (typeof source.resume === 'function')
+        source.resume();
     } else {
       this.end(source, sourceEncoding);
     }
@@ -183,6 +186,10 @@ Object.defineProperties(BufferedStream.prototype, {
     dest.on('close', cleanup);
 
     dest.emit('pipe', source);
+
+    // Mimic the behavior of node v2 streams where pipe() resumes the flow.
+    // This also lets us avoid having to do stream.resume() all over the place.
+    source.resume();
 
     // Allow for unix-like usage: A.pipe(B).pipe(C)
     return dest;
