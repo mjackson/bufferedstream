@@ -1,6 +1,6 @@
 var assert = require('assert');
 var expect = require('expect');
-var bops = require('bops');
+var Buffer = require('buffer').Buffer;
 var BufferedStream = require('../BufferedStream');
 
 describe('A BufferedStream', function () {
@@ -154,7 +154,7 @@ describe('A BufferedStream', function () {
       it('uses the proper encoding', function (callback) {
         var content = 'hello';
         var stream = new BufferedStream;
-        stream.write(bops.to(bops.from(content), 'base64'), 'base64');
+        stream.write(new Buffer(new Buffer(content), 'base64'), 'base64');
         stream.end();
 
         collectDataInString(stream, function (string) {
@@ -185,9 +185,7 @@ describe('A BufferedStream', function () {
 
   testSourceType('String', String);
   testSourceType('BufferedStream', BufferedStream);
-
-  if (typeof Buffer !== 'undefined')
-    testSourceType('Buffer', Buffer);
+  testSourceType('Buffer', Buffer);
 
   describe('when sourced from a node Readable', function () {
     it('does not throw', function () {
@@ -272,7 +270,7 @@ function testSourceType(sourceTypeName, sourceType) {
     it('emits its content as binary data', function (callback) {
       collectDataFromSource(source, function (data) {
         data.forEach(function (chunk) {
-          assert(bops.is(chunk));
+          assert(Buffer.isBuffer(chunk));
         });
         assert.equal(stringifyData(data), content);
         callback(null);
@@ -295,7 +293,7 @@ function testSourceType(sourceTypeName, sourceType) {
       it('emits its content as binary data', function (callback) {
         temporarilyPauseThenCollectDataFromSource(source, function (data) {
           data.forEach(function (chunk) {
-            assert(bops.is(chunk));
+            assert(Buffer.isBuffer(chunk));
           });
           assert.equal(stringifyData(data), content);
           callback(null);

@@ -1,5 +1,5 @@
 var d = require('d');
-var bops = require('bops');
+var Buffer = require('buffer').Buffer;
 var ee = require('event-emitter');
 var allOff = require('event-emitter/all-off');
 var hasListeners = require('event-emitter/has-listeners');
@@ -13,9 +13,16 @@ var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
  * The set of valid encodings.
  */
 var VALID_ENCODINGS = {
-  utf8: true,
-  hex: true,
-  base64: true
+  'hex':      true,
+  'utf8':     true,
+  'utf-8':    true,
+  'ascii':    true,
+  'binary':   true,
+  'base64':   true,
+  'ucs2':     true,
+  'ucs-2':    true,
+  'utf16le':  true,
+  'utf-16le': true
 };
 
 /**
@@ -96,7 +103,7 @@ Object.defineProperties(BufferedStream.prototype, {
    */
   setEncoding: d(function (encoding) {
     if (VALID_ENCODINGS[encoding] !== true)
-      throw new Error('Invalid encoding: ' + encoding);
+      throw new Error('Unknown encoding: ' + encoding);
 
     this.encoding = encoding;
   }),
@@ -213,11 +220,11 @@ Object.defineProperties(BufferedStream.prototype, {
     if (this.ended)
       throw new Error('BufferedStream is already ended');
 
-    if (!bops.is(chunk))
-      chunk = bops.from(chunk, arguments[1]);
+    if (!Buffer.isBuffer(chunk))
+      chunk = new Buffer(chunk, arguments[1]);
 
     this._chunks.push(chunk);
-    this.size += getByteLength(chunk);
+    this.size += chunk.length;
 
     flushSoon(this);
 
@@ -280,10 +287,10 @@ function flush(stream) {
 
   var chunk;
   while (chunk = stream._chunks.shift()) {
-    stream.size -= getByteLength(chunk);
+    stream.size -= chunk.length;
 
     if (stream.encoding) {
-      stream.emit('data', bops.to(chunk, stream.encoding));
+      stream.emit('data', chunk.toString(stream.encoding));
     } else {
       stream.emit('data', chunk);
     }
@@ -302,13 +309,6 @@ function flush(stream) {
     stream._wasFull = false;
     stream.emit('drain');
   }
-}
-
-function getByteLength(chunk) {
-  if (typeof chunk.byteLength !== 'undefined')
-    return chunk.byteLength;
-
-  return chunk.length;
 }
 
 module.exports = BufferedStream;
