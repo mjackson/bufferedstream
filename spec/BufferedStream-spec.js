@@ -198,18 +198,30 @@ describe('A BufferedStream', function () {
         var stream = new BufferedStream(source);
       }).toNotThrow();
     });
+
+    it('emits the entire contents of the source', function (done) {
+      var fs = require('fs');
+      var contents = fs.readFileSync(__filename);
+
+      var stream = new BufferedStream(fs.createReadStream(__filename));
+
+      collectDataInString(stream, function (string) {
+        assert.equal(string, contents.toString());
+        done();
+      });
+    });
   });
 });
 
 function collectData(stream, callback) {
-  var data = [];
+  var chunks = [];
 
   stream.on('data', function (chunk) {
-    data.push(chunk);
+    chunks.push(chunk);
   });
 
   stream.on('end', function () {
-    callback(data);
+    callback(chunks);
   });
 }
 
@@ -235,9 +247,6 @@ function collectDataFromSource(source, encoding, callback) {
   stream.encoding = encoding;
   collectData(stream, callback);
 
-  if (source && typeof source.resume === 'function')
-    source.resume();
-
   return stream;
 }
 
@@ -246,7 +255,7 @@ function temporarilyPauseThenCollectDataFromSource(source, encoding, callback) {
   stream.pause();
   setTimeout(function () {
     stream.resume();
-  }, 1);
+  });
 }
 
 function testSourceType(sourceTypeName, sourceType) {
@@ -255,15 +264,15 @@ function testSourceType(sourceTypeName, sourceType) {
     var source;
     beforeEach(function () {
       source = sourceType(content);
-      if (typeof source.pause === 'function') {
+
+      if (typeof source.pause === 'function')
         source.pause();
-      }
     });
 
-    it('emits its content as Buffers', function (callback) {
+    it('emits its content as binary data', function (callback) {
       collectDataFromSource(source, function (data) {
         data.forEach(function (chunk) {
-          assert(chunk instanceof Buffer);
+          assert(bops.is(chunk));
         });
         assert.equal(stringifyData(data), content);
         callback(null);
@@ -283,10 +292,10 @@ function testSourceType(sourceTypeName, sourceType) {
     });
 
     describe('and temporarily paused', function () {
-      it('emits its content as Buffers', function (callback) {
+      it('emits its content as binary data', function (callback) {
         temporarilyPauseThenCollectDataFromSource(source, function (data) {
           data.forEach(function (chunk) {
-            assert(chunk instanceof Buffer);
+            assert(bops.is(chunk));
           });
           assert.equal(stringifyData(data), content);
           callback(null);
