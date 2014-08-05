@@ -1,10 +1,15 @@
+= 2.4.0 / 2014-08-05
+
+  * Use Browserify's Buffer module instead of bops
+  * Added browser specs
+
 = 2.3.1 / 2014-08-04
 
-  * Fix compat regression with node v2 Readable streams.
+  * Fix compat regression with node v2 Readable streams
 
 = 2.3.0 / 2014-08-02
 
-  * Auto-resume on pipe(). This mimics the behavior of node streams v2.
+  * Auto-resume on pipe(). This mimics the behavior of node streams v2
 
 = 2.2.0 / 2014-07-14
 
