@@ -187,7 +187,9 @@ describe('A BufferedStream', function () {
   testSourceType('BufferedStream', BufferedStream);
   testSourceType('Buffer', Buffer);
 
-  describe('when sourced from a node Readable', function () {
+  var describeNode = typeof process === 'undefined' ? describe.skip : describe;
+
+  describeNode('when sourced from a node Readable', function () {
     it('does not throw', function () {
       var fs = require('fs');
       var source = fs.createReadStream(__filename);

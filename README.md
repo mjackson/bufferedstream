@@ -42,9 +42,17 @@ Please see the source code for more information. The module is small enough (and
 
 ### Specs
 
-Run the specs with [mocha](http://visionmedia.github.com/mocha/):
+To run the specs in node:
 
-    $ mocha spec
+    $ npm install
+    $ ./scripts/run-specs
+
+To run the specs in a browser, first run:
+
+    $ npm install
+    $ ./scripts/serve-specs
+
+Then open [http://localhost:8080/](http://localhost:8080/) in a browser. 
 
 ### License
 
