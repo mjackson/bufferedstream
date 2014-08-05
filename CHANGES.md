@@ -1,4 +1,4 @@
-= HEAD
+= 2.3.1 / 2014-08-04
 
   * Fix compat regression with node v2 Readable streams.
 
