@@ -1,3 +1,7 @@
+= HEAD
+
+  * Fix compat regression with node v2 Readable streams.
+
 = 2.3.0 / 2014-08-02
 
   * Auto-resume on pipe(). This mimics the behavior of node streams v2.

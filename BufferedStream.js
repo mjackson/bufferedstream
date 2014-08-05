@@ -60,10 +60,10 @@ function BufferedStream(maxSize, source, sourceEncoding) {
 
   if (source != null) {
     if (typeof source.pipe === 'function') {
-      source.pipe(this);
-
       if (typeof source.resume === 'function')
-        source.resume();
+        source.resume(); // Triggers "old mode" in node v2 streams.
+
+      source.pipe(this);
     } else {
       this.end(source, sourceEncoding);
     }

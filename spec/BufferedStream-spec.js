@@ -188,6 +188,17 @@ describe('A BufferedStream', function () {
 
   if (typeof Buffer !== 'undefined')
     testSourceType('Buffer', Buffer);
+
+  describe('when sourced from a node Readable', function () {
+    it('does not throw', function () {
+      var fs = require('fs');
+      var source = fs.createReadStream(__filename);
+
+      expect(function () {
+        var stream = new BufferedStream(source);
+      }).toNotThrow();
+    });
+  });
 });
 
 function collectData(stream, callback) {
