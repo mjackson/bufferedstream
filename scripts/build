@@ -1,4 +1,0 @@
-#!/bin/sh
-mkdir -p build
-./node_modules/.bin/browserify BufferedStream.js --detect-globals false > build/BufferedStream.js
-./node_modules/.bin/uglifyjs build/BufferedStream.js -m -o build/BufferedStream.min.js
