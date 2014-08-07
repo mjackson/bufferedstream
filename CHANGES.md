@@ -1,3 +1,7 @@
+= HEAD
+
+  * Use Browserify's events module instead of event-emitter
+
 = 2.4.0 / 2014-08-05
 
   * Use Browserify's Buffer module instead of bops

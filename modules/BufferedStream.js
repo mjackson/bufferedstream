@@ -1,8 +1,6 @@
 var d = require('d');
 var Buffer = require('buffer').Buffer;
-var ee = require('event-emitter');
-var allOff = require('event-emitter/all-off');
-var hasListeners = require('event-emitter/has-listeners');
+var EventEmitter = require('events').EventEmitter;
 
 /**
  * The default maximum buffer size.
@@ -46,6 +44,8 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   if (!(this instanceof BufferedStream))
     return new BufferedStream(maxSize, source, sourceEncoding);
 
+  EventEmitter.call(this);
+
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
     source = maxSize;
@@ -77,9 +77,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   }
 }
 
-ee(BufferedStream.prototype);
-
-Object.defineProperties(BufferedStream.prototype, {
+BufferedStream.prototype = Object.create(EventEmitter.prototype, {
 
   /**
    * A read-only property that returns true if this stream has no data to emit.
@@ -198,14 +196,6 @@ Object.defineProperties(BufferedStream.prototype, {
 
     // Allow for unix-like usage: A.pipe(B).pipe(C)
     return dest;
-  }),
-
-  // For compat with node streams && pipe.
-  addListener: d(ee.methods.on),
-  removeListener: d(ee.methods.off),
-  removeAllListeners: d(function () {
-    allOff(this);
-    return this;
   }),
 
   /**
