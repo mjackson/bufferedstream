@@ -1,4 +1,4 @@
-= HEAD
+= 2.5.0 / 2014-08-07
 
   * Use Browserify's events module instead of event-emitter
 
