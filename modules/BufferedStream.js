@@ -165,7 +165,7 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
     // don't leave dangling pipes when there are errors.
     function onerror(error) {
       cleanup();
-      if (!hasListeners(this, 'error'))
+      if (EventEmitter.listenerCount(this, 'error') === 0)
         throw error; // Unhandled stream error in pipe.
     }
 
