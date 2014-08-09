@@ -15,6 +15,10 @@ describe('A BufferedStream', function () {
       assert(!stream.full);
     });
 
+    it('is not piped', function () {
+      assert(!stream.piped);
+    });
+
     it('is readable', function () {
       assert(stream.readable);
     });
@@ -43,6 +47,30 @@ describe('A BufferedStream', function () {
     });
   });
 
+  describe('when it is piped to', function () {
+    var stream;
+    beforeEach(function () {
+      stream = new BufferedStream;
+
+      var source = new BufferedStream;
+      source.pause();
+
+      source.pipe(stream);
+    });
+
+    it('is piped', function () {
+      assert(stream.piped);
+    });
+
+    describe('twice', function () {
+      it('throws', function () {
+        expect(function () {
+          (new BufferedStream).pipe(stream);
+        }).toThrow(Error);
+      });
+    });
+  });
+
   describe('setEncoding', function () {
     it('sets the encoding of the stream', function () {
       var stream = new BufferedStream;
@@ -58,22 +86,28 @@ describe('A BufferedStream', function () {
       stream.pause();
     });
 
-    it('only emits "end" after it is resumed', function (done) {
-      var endWasCalled = false;
-      stream.on('end', function () {
-        endWasCalled = true;
-      });
+    it('is paused', function () {
+      assert(stream.paused);
+    });
 
-      stream.end();
-      expect(endWasCalled).toEqual(false);
+    describe('then resumed', function () {
+      it('emits "end"', function (done) {
+        var endWasCalled = false;
+        stream.on('end', function () {
+          endWasCalled = true;
+        });
 
-      setTimeout(function () {
-        stream.resume();
+        stream.end();
+        expect(endWasCalled).toEqual(false);
+
         setTimeout(function () {
-          expect(endWasCalled).toEqual(true);
-          done();
-        }, 5);
-      }, 0);
+          stream.resume();
+          setTimeout(function () {
+            expect(endWasCalled).toEqual(true);
+            done();
+          }, 5);
+        }, 0);
+      });
     });
   });
 
@@ -81,6 +115,12 @@ describe('A BufferedStream', function () {
     var stream;
     beforeEach(function () {
       stream = new BufferedStream(3);
+      stream.end('hello');
+      assert(stream.full);
+    });
+
+    it('is ended', function () {
+      assert(stream.ended);
     });
 
     it('does not emit "drain" events', function (done) {
@@ -93,9 +133,6 @@ describe('A BufferedStream', function () {
       stream.on('drain', function () {
         drainWasCalled = true;
       });
-
-      stream.end('hello');
-      assert(stream.full);
 
       stream.on('data', function () {
         stream.pause();

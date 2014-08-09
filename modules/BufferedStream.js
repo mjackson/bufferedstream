@@ -64,6 +64,9 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this._chunks = [];
   this._flushing = false;
   this._wasFull = false;
+  this._source = null;
+
+  trackSource(this);
 
   if (source != null) {
     if (typeof source.pipe === 'function') {
@@ -75,6 +78,24 @@ function BufferedStream(maxSize, source, sourceEncoding) {
       this.end(source, sourceEncoding);
     }
   }
+}
+
+function trackSource(dest) {
+  dest.on('pipe', function (source) {
+    if (dest._source)
+      throw new Error('BufferedStream is already piped');
+
+    dest._source = source;
+
+    function cleanup() {
+      dest._source = null;
+      source.removeListener('error', cleanup);
+      source.removeListener('end', cleanup);
+    }
+
+    source.on('error', cleanup);
+    source.on('end', cleanup);
+  });
 }
 
 BufferedStream.prototype = Object.create(EventEmitter.prototype, {
@@ -91,6 +112,14 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
    */
   full: d.gs(function () {
     return this.maxSize < this.size;
+  }),
+
+  /**
+   * A read-only property that is true if this stream is currently receiving
+   * data from another stream via pipe().
+   */
+  piped: d.gs(function () {
+    return this._source != null;
   }),
 
   /**

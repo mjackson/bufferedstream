@@ -1,3 +1,9 @@
+= HEAD
+
+  * Add BufferedStream#piped
+  * Prevent piping two different streams to the same BufferedStream
+    simultaneously to prevent data corruption
+
 = 2.5.0 / 2014-08-07
 
   * Use Browserify's events module instead of event-emitter
