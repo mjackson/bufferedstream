@@ -80,14 +80,14 @@ function BufferedStream(maxSize, source, sourceEncoding) {
 BufferedStream.prototype = Object.create(EventEmitter.prototype, {
 
   /**
-   * A read-only property that returns true if this stream has no data to emit.
+   * A read-only property that is true if this stream has no data to emit.
    */
   empty: d.gs(function () {
     return this._chunks == null || this._chunks.length === 0;
   }),
 
   /**
-   * A read-only property that returns true if this stream's buffer is full.
+   * A read-only property that is true if this stream's buffer is full.
    */
   full: d.gs(function () {
     return this.maxSize < this.size;
@@ -96,8 +96,6 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
   /**
    * Sets this stream's encoding. If an encoding is set, this stream will emit
    * strings using that encoding. Otherwise, it emits binary objects.
-   *
-   * Supported encodings are: "utf8", "hex", and "base64".
    */
   setEncoding: d(function (encoding) {
     if (VALID_ENCODINGS[encoding] !== true)
