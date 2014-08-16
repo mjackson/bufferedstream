@@ -9,7 +9,7 @@
   },
   "main": "./modules/BufferedStream",
   "scripts": {
-    "test": "./scripts/run-specs"
+    "test": "scripts/run-specs"
   },
   "engines": {
     "node": ">=0.4.7"

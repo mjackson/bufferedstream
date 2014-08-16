@@ -52,7 +52,7 @@ To run the specs in a browser, first run:
     $ npm install
     $ ./scripts/serve-specs
 
-Then open [http://localhost:8080/](http://localhost:8080/) in a browser. 
+Then open [http://localhost:8080/](http://localhost:8080/) in a browser.
 
 ### License
 
