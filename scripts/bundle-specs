@@ -1,2 +1,2 @@
 #!/bin/sh
-./node_modules/.bin/browserify specs/BufferedStream-spec.js --detect-globals false > specs/browser/bundle.js
+./node_modules/.bin/browserify specs/browser/tests.js --detect-globals false > specs/browser/tests-bundle.js
