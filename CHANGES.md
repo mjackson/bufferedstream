@@ -1,8 +1,9 @@
-= HEAD
+= 2.6.0 / 2014-08-15
 
   * Add BufferedStream#piped
   * Prevent piping two different streams to the same BufferedStream
     simultaneously to prevent data corruption
+  * Correctly setup BufferedStream#constructor
 
 = 2.5.0 / 2014-08-07
 

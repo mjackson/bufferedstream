@@ -2,7 +2,7 @@
   "name": "bufferedstream",
   "description": "A robust stream implementation for node.js and the browser",
   "author": "Michael Jackson",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/mjackson/bufferedstream.git"
