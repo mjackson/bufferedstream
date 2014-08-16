@@ -1,6 +1,7 @@
 var d = require('d');
 var Buffer = require('buffer').Buffer;
 var EventEmitter = require('events').EventEmitter;
+require('setimmediate');
 
 /**
  * The default maximum buffer size.
@@ -99,6 +100,8 @@ function trackSource(dest) {
 }
 
 BufferedStream.prototype = Object.create(EventEmitter.prototype, {
+
+  constructor: d(BufferedStream),
 
   /**
    * A read-only property that is true if this stream has no data to emit.
@@ -273,8 +276,6 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
   })
 
 });
-
-require('setimmediate');
 
 function flushSoon(stream) {
   if (stream._flushing)
