@@ -1,28 +1,14 @@
 var d = require('d');
-var Buffer = require('buffer').Buffer;
 var EventEmitter = require('events').EventEmitter;
+var isBinary = require('./utils/isBinary');
+var binaryFrom = require('./utils/binaryFrom');
+var binaryTo = require('./utils/binaryTo');
 require('setimmediate');
 
 /**
  * The default maximum buffer size.
  */
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
-
-/**
- * The set of valid encodings.
- */
-var VALID_ENCODINGS = {
-  'hex':      true,
-  'utf8':     true,
-  'utf-8':    true,
-  'ascii':    true,
-  'binary':   true,
-  'base64':   true,
-  'ucs2':     true,
-  'ucs-2':    true,
-  'utf16le':  true,
-  'utf-16le': true
-};
 
 /**
  * A robust stream implementation for node.js and the browser based on the
@@ -128,11 +114,10 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
   /**
    * Sets this stream's encoding. If an encoding is set, this stream will emit
    * strings using that encoding. Otherwise, it emits binary objects.
+   *
+   * Valid encodings are "hex", "base64", "utf8", and "utf-8".
    */
   setEncoding: d(function (encoding) {
-    if (VALID_ENCODINGS[encoding] !== true)
-      throw new Error('Unknown encoding: ' + encoding);
-
     this.encoding = encoding;
   }),
 
@@ -240,8 +225,8 @@ BufferedStream.prototype = Object.create(EventEmitter.prototype, {
     if (this.ended)
       throw new Error('BufferedStream is already ended');
 
-    if (!Buffer.isBuffer(chunk))
-      chunk = new Buffer(chunk, arguments[1]);
+    if (!isBinary(chunk))
+      chunk = binaryFrom(chunk, arguments[1]);
 
     this._chunks.push(chunk);
     this.size += chunk.length;
@@ -308,7 +293,7 @@ function flush(stream) {
     stream.size -= chunk.length;
 
     if (stream.encoding) {
-      stream.emit('data', chunk.toString(stream.encoding));
+      stream.emit('data', binaryTo(chunk, stream.encoding));
     } else {
       stream.emit('data', chunk);
     }

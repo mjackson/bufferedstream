@@ -1,7 +1,9 @@
 var assert = require('assert');
 var expect = require('expect');
-var Buffer = require('buffer').Buffer;
 var BufferedStream = require('../modules/BufferedStream');
+var isBinary = require('../modules/utils/isBinary');
+var binaryFrom = require('../modules/utils/binaryFrom');
+var binaryTo = require('../modules/utils/binaryTo');
 
 describe('A BufferedStream', function () {
   describe('when newly created', function () {
@@ -191,7 +193,7 @@ describe('A BufferedStream', function () {
       it('uses the proper encoding', function (callback) {
         var content = 'hello';
         var stream = new BufferedStream;
-        stream.write(new Buffer(new Buffer(content), 'base64'), 'base64');
+        stream.write(binaryTo(binaryFrom(content), 'base64'), 'base64');
         stream.end();
 
         collectDataInString(stream, function (string) {
@@ -222,7 +224,9 @@ describe('A BufferedStream', function () {
 
   testSourceType('String', String);
   testSourceType('BufferedStream', BufferedStream);
-  testSourceType('Buffer', Buffer);
+
+  if (typeof Buffer !== 'undefined')
+    testSourceType('Buffer', Buffer);
 
   var describeNode = typeof process === 'undefined' ? describe.skip : describe;
 
@@ -263,9 +267,7 @@ function collectData(stream, callback) {
 }
 
 function stringifyData(data) {
-  return data.map(function (chunk) {
-    return chunk.toString();
-  }).join('');
+  return binaryTo(require('bodec').join(data));
 }
 
 function collectDataInString(stream, callback) {
@@ -309,7 +311,7 @@ function testSourceType(sourceTypeName, sourceType) {
     it('emits its content as binary data', function (callback) {
       collectDataFromSource(source, function (data) {
         data.forEach(function (chunk) {
-          assert(Buffer.isBuffer(chunk));
+          assert(isBinary(chunk));
         });
         assert.equal(stringifyData(data), content);
         callback(null);
@@ -322,7 +324,7 @@ function testSourceType(sourceTypeName, sourceType) {
           data.forEach(function (chunk) {
             assert.equal(typeof chunk, 'string');
           });
-          assert.equal(stringifyData(data), content);
+          assert.equal(data.join(''), content);
           callback(null);
         });
       });
@@ -332,7 +334,7 @@ function testSourceType(sourceTypeName, sourceType) {
       it('emits its content as binary data', function (callback) {
         temporarilyPauseThenCollectDataFromSource(source, function (data) {
           data.forEach(function (chunk) {
-            assert(Buffer.isBuffer(chunk));
+            assert(isBinary(chunk));
           });
           assert.equal(stringifyData(data), content);
           callback(null);
@@ -345,7 +347,7 @@ function testSourceType(sourceTypeName, sourceType) {
             data.forEach(function (chunk) {
               assert.equal(typeof chunk, 'string');
             });
-            assert.equal(stringifyData(data), content);
+            assert.equal(data.join(''), content);
             callback(null);
           });
         });
