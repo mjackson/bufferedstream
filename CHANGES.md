@@ -1,4 +1,4 @@
-= HEAD
+= 2.8.0 / 2014-08-28
 
   * Use asap instead of setImmediate
 
