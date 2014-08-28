@@ -1,3 +1,7 @@
+= HEAD
+
+  * Use asap instead of setImmediate
+
 = 2.7.0 / 2014-08-26
 
   * Use bodec instead of Buffer for smaller browser builds

@@ -15,10 +15,10 @@
     "node": ">=0.4.7"
   },
   "dependencies": {
+    "asap": "^1.0.0",
     "bodec": "~0.1.0",
     "d": "~0.1.1",
-    "events": "~1.0.1",
-    "setimmediate": "~1.0.2"
+    "events": "~1.0.1"
   },
   "devDependencies": {
     "browserify": "~4.1.9",

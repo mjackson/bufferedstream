@@ -1,9 +1,9 @@
 var d = require('d');
+var asap = require('asap');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
 var binaryTo = require('./utils/binaryTo');
-require('setimmediate');
 
 /**
  * The default maximum buffer size.
@@ -268,7 +268,7 @@ function flushSoon(stream) {
 
   stream._flushing = true;
 
-  setImmediate(function tick() {
+  asap(function tryToFlush() {
     if (stream.paused) {
       stream._flushing = false;
       return;
@@ -279,7 +279,7 @@ function flushSoon(stream) {
     if (stream.empty) {
       stream._flushing = false;
     } else {
-      setImmediate(tick);
+      asap(tryToFlush);
     }
   });
 }
