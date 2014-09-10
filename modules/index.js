@@ -1,5 +1,5 @@
 var d = require('d');
-var asap = require('asap');
+var async = require('when/lib/async');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
@@ -268,7 +268,7 @@ function flushSoon(stream) {
 
   stream._flushing = true;
 
-  asap(function tryToFlush() {
+  async(function tryToFlush() {
     if (stream.paused) {
       stream._flushing = false;
       return;
@@ -279,7 +279,7 @@ function flushSoon(stream) {
     if (stream.empty) {
       stream._flushing = false;
     } else {
-      asap(tryToFlush);
+      async(tryToFlush);
     }
   });
 }

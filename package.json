@@ -15,10 +15,10 @@
     "node": ">=0.4.7"
   },
   "dependencies": {
-    "asap": "git://github.com/kriskowal/asap.git",
     "bodec": "~0.1.0",
     "d": "~0.1.1",
-    "events": "~1.0.1"
+    "events": "~1.0.1",
+    "when": "~3.4.5"
   },
   "devDependencies": {
     "browserify": "~4.1.9",
