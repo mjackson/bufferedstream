@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/mjackson/bufferedstream.git"
   },
-  "main": "./modules/BufferedStream",
+  "main": "modules",
   "scripts": {
     "test": "scripts/run-specs"
   },

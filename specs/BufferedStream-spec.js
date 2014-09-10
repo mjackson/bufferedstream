@@ -1,6 +1,6 @@
 var assert = require('assert');
 var expect = require('expect');
-var BufferedStream = require('../modules/BufferedStream');
+var BufferedStream = require('../modules');
 var isBinary = require('../modules/utils/isBinary');
 var binaryFrom = require('../modules/utils/binaryFrom');
 var binaryTo = require('../modules/utils/binaryTo');
