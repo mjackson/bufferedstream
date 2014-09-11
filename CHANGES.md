@@ -1,3 +1,9 @@
+= HEAD
+
+  * Streams start paused by default
+  * (new BufferedStream) instanceof Stream is true on node.js
+  * Use when/lib/async instead of asap
+
 = 2.8.0 / 2014-08-28
 
   * Use asap instead of setImmediate
