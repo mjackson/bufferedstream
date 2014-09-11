@@ -29,8 +29,8 @@ describe('A BufferedStream', function () {
       assert(stream.writable);
     });
 
-    it('is not paused', function () {
-      assert(!stream.paused);
+    it('is paused', function () {
+      assert(stream.paused);
     });
 
     it('is not ended', function () {
@@ -119,6 +119,7 @@ describe('A BufferedStream', function () {
       stream = new BufferedStream(3);
       stream.end('hello');
       assert(stream.full);
+      stream.resume();
     });
 
     it('is ended', function () {
@@ -156,7 +157,6 @@ describe('A BufferedStream', function () {
       count = 0;
 
       var stream = new BufferedStream('Hello world');
-      stream.pause();
       stream.resume();
       stream.pause();
       stream.resume();
@@ -192,9 +192,7 @@ describe('A BufferedStream', function () {
     describe('when called with a string in base64 encoding', function () {
       it('uses the proper encoding', function (callback) {
         var content = 'hello';
-        var stream = new BufferedStream;
-        stream.write(binaryTo(binaryFrom(content), 'base64'), 'base64');
-        stream.end();
+        var stream = new BufferedStream(binaryTo(binaryFrom(content), 'base64'), 'base64');
 
         collectDataInString(stream, function (string) {
           expect(string).toEqual(content);
@@ -264,6 +262,8 @@ function collectData(stream, callback) {
   stream.on('end', function () {
     callback(chunks);
   });
+
+  stream.resume();
 }
 
 function stringifyData(data) {

@@ -43,7 +43,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   this.maxSize = maxSize;
   this.size = 0;
   this.encoding = null;
-  this.paused = false;
+  this.paused = true;
   this.ended = false;
   this.readable = true;
   this.writable = true;
