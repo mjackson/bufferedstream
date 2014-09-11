@@ -5,6 +5,10 @@ var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
 var binaryTo = require('./utils/binaryTo');
 
+var BaseClass = (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]')
+  ? require('stream' + '').Stream // Stop Browserify.
+  : EventEmitter;
+
 /**
  * The default maximum buffer size.
  */
@@ -31,7 +35,7 @@ function BufferedStream(maxSize, source, sourceEncoding) {
   if (!(this instanceof BufferedStream))
     return new BufferedStream(maxSize, source, sourceEncoding);
 
-  EventEmitter.call(this);
+  BaseClass.call(this);
 
   if (typeof maxSize !== 'number') {
     sourceEncoding = source;
@@ -85,7 +89,7 @@ function trackSource(dest) {
   });
 }
 
-BufferedStream.prototype = Object.create(EventEmitter.prototype, {
+BufferedStream.prototype = Object.create(BaseClass.prototype, {
 
   constructor: d(BufferedStream),
 
