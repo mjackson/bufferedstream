@@ -1,4 +1,4 @@
-= HEAD
+= 3.0.0 / 2014-09-10
 
   * Streams start paused by default
   * (new BufferedStream) instanceof Stream is true on node.js
