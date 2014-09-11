@@ -5,14 +5,84 @@ var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
 var binaryTo = require('./utils/binaryTo');
 
-var BaseClass = (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]')
-  ? require('stream' + '').Stream // Stop Browserify.
-  : EventEmitter;
-
 /**
  * The default maximum buffer size.
  */
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
+
+var BaseClass = (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]')
+  ? require('stream' + '').Stream // Stop Browserify.
+  : EventEmitter;
+
+function trackSource(dest) {
+  dest.on('pipe', function (source) {
+    if (dest._source)
+      throw new Error('BufferedStream is already piped');
+
+    dest._source = source;
+
+    function cleanup() {
+      dest._source = null;
+      source.removeListener('error', cleanup);
+      source.removeListener('end', cleanup);
+    }
+
+    source.on('error', cleanup);
+    source.on('end', cleanup);
+  });
+}
+
+function flushSoon(stream) {
+  if (stream._flushing)
+    return;
+
+  stream._flushing = true;
+
+  async(function tryToFlush() {
+    if (stream.paused) {
+      stream._flushing = false;
+      return;
+    }
+
+    flush(stream);
+
+    if (stream.empty) {
+      stream._flushing = false;
+    } else {
+      async(tryToFlush);
+    }
+  });
+}
+
+function flush(stream) {
+  if (!stream._chunks)
+    return;
+
+  var chunk;
+  while (chunk = stream._chunks.shift()) {
+    stream.size -= chunk.length;
+
+    if (stream.encoding) {
+      stream.emit('data', binaryTo(chunk, stream.encoding));
+    } else {
+      stream.emit('data', chunk);
+    }
+
+    // If the stream was paused in a data event handler, break.
+    if (stream.paused)
+      break;
+  }
+
+  if (stream.ended) {
+    if (!stream.paused) {
+      stream._chunks = null;
+      stream.emit('end');
+    }
+  } else if (stream._wasFull && !stream.full) {
+    stream._wasFull = false;
+    stream.emit('drain');
+  }
+}
 
 /**
  * A robust stream implementation for node.js and the browser based on the
@@ -69,24 +139,6 @@ function BufferedStream(maxSize, source, sourceEncoding) {
       this.end(source, sourceEncoding);
     }
   }
-}
-
-function trackSource(dest) {
-  dest.on('pipe', function (source) {
-    if (dest._source)
-      throw new Error('BufferedStream is already piped');
-
-    dest._source = source;
-
-    function cleanup() {
-      dest._source = null;
-      source.removeListener('error', cleanup);
-      source.removeListener('end', cleanup);
-    }
-
-    source.on('error', cleanup);
-    source.on('end', cleanup);
-  });
 }
 
 BufferedStream.prototype = Object.create(BaseClass.prototype, {
@@ -265,57 +317,5 @@ BufferedStream.prototype = Object.create(BaseClass.prototype, {
   })
 
 });
-
-function flushSoon(stream) {
-  if (stream._flushing)
-    return;
-
-  stream._flushing = true;
-
-  async(function tryToFlush() {
-    if (stream.paused) {
-      stream._flushing = false;
-      return;
-    }
-
-    flush(stream);
-
-    if (stream.empty) {
-      stream._flushing = false;
-    } else {
-      async(tryToFlush);
-    }
-  });
-}
-
-function flush(stream) {
-  if (!stream._chunks)
-    return;
-
-  var chunk;
-  while (chunk = stream._chunks.shift()) {
-    stream.size -= chunk.length;
-
-    if (stream.encoding) {
-      stream.emit('data', binaryTo(chunk, stream.encoding));
-    } else {
-      stream.emit('data', chunk);
-    }
-
-    // If the stream was paused in a data event handler, break.
-    if (stream.paused)
-      break;
-  }
-
-  if (stream.ended) {
-    if (!stream.paused) {
-      stream._chunks = null;
-      stream.emit('end');
-    }
-  } else if (stream._wasFull && !stream.full) {
-    stream._wasFull = false;
-    stream.emit('drain');
-  }
-}
 
 module.exports = BufferedStream;
