@@ -1,9 +1,9 @@
 var assert = require('assert');
 var expect = require('expect');
-var BufferedStream = require('../index');
 var isBinary = require('../utils/isBinary');
 var binaryFrom = require('../utils/binaryFrom');
 var binaryTo = require('../utils/binaryTo');
+var BufferedStream = require('../BufferedStream');
 
 describe('A BufferedStream', function () {
   describe('when newly created', function () {
