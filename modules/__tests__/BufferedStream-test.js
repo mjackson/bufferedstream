@@ -297,12 +297,12 @@ function temporarilyPauseThenCollectDataFromSource(source, encoding, callback) {
   });
 }
 
-function testSourceType(sourceTypeName, sourceType) {
-  describe('when sourced from a ' + sourceTypeName, function () {
+function testSourceType(sourceType, sourceFactory) {
+  describe('when sourced from a ' + sourceType, function () {
     var content = 'Hello world';
     var source;
     beforeEach(function () {
-      source = sourceType(content);
+      source = sourceFactory(content);
 
       if (typeof source.pause === 'function')
         source.pause();

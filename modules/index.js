@@ -1,5 +1,4 @@
 var d = require('d');
-var async = require('when/lib/async');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
@@ -10,9 +9,14 @@ var binaryTo = require('./utils/binaryTo');
  */
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
 
-var BaseClass = (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]')
-  ? require('stream' + '').Stream // Stop Browserify.
-  : EventEmitter;
+var BaseClass, async;
+if (typeof window !== 'undefined') {
+  BaseClass = EventEmitter;
+  async = window.setTimeout;
+} else {
+  BaseClass = require('stream' + '').Stream; // Stop Browserify.
+  async = process.nextTick;
+}
 
 function trackSource(dest) {
   dest.on('pipe', function (source) {
