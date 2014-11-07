@@ -1,3 +1,8 @@
+= 3.0.1 / 2014-11-07
+
+  * Use process.nextTick/window.setTimeout for async scheduling
+  * Remove dependency on when.js
+
 = 3.0.0 / 2014-09-10
 
   * Streams start paused by default
