@@ -1,3 +1,5 @@
+/* jshint -W058 */
+
 var assert = require('assert');
 var expect = require('expect');
 var isBinary = require('../utils/isBinary');
@@ -234,7 +236,7 @@ describe('A BufferedStream', function () {
       var source = fs.createReadStream(__filename);
 
       expect(function () {
-        var stream = new BufferedStream(source);
+        new BufferedStream(source);
       }).toNotThrow();
     });
 

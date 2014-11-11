@@ -1,3 +1,5 @@
+/* jshint -W084 */
+
 var d = require('d');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
