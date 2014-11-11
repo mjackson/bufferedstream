@@ -1,3 +1,7 @@
+= HEAD
+
+  * Remove tests from npm package
+
 = 3.0.1 / 2014-11-07
 
   * Use process.nextTick/window.setTimeout for async scheduling
