@@ -1,4 +1,4 @@
-= HEAD
+= 3.0.2 / 2014-11-10
 
   * Remove tests from npm package
 
