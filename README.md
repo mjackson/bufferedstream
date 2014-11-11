@@ -6,12 +6,6 @@ The implementation follows the first version of the node streams API, which is p
 
 BufferedStream addresses these problems by providing a well-tested, performant implementation that preserves the original streams API and works in both node.js and browsers.
 
-### Installation
-
-Using [npm](http://npmjs.org):
-
-    $ npm install bufferedstream
-
 ### Usage
 
 The key feature of this class is that anything you write to the stream in the current turn of the event loop is buffered until the next one. This allows you to register event handlers, pause the stream, etc. reliably without losing any data.
@@ -40,17 +34,24 @@ var stream = new BufferedStream(anotherStream);
 
 Please see the source code for more information. The module is small enough (and well-documented) that it should be easy to digest in a quick skim.
 
-### Specs
+### Installation
 
-To run the specs in node:
+Using [npm](http://npmjs.org):
+
+    $ npm install bufferedstream
+
+### Tests
+
+To run the tests in node:
 
     $ npm install
-    $ ./scripts/run-specs
+    $ npm test
 
-To run the specs in a browser, first run:
+To run the tests in a browser, first run:
 
     $ npm install
-    $ ./scripts/serve-specs
+    $ npm run bundle-tests
+    $ npm run serve-tests
 
 Then open [http://localhost:8080/](http://localhost:8080/) in a browser.
 
