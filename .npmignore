@@ -1,1 +1,3 @@
+.jshintrc
+.travis.yml
 modules/**/__tests__
