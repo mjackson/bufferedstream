@@ -40,6 +40,10 @@ Using [npm](http://npmjs.org):
 
     $ npm install bufferedstream
 
+### Issues
+
+Please file issues on the [issue tracker on GitHub](https://github.com/mjackson/bufferedstream/issues).
+
 ### Tests
 
 To run the tests in node:
