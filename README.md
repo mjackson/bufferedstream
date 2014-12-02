@@ -1,6 +1,7 @@
 [![npm package](https://img.shields.io/npm/v/bufferedstream.svg?style=flat-square)](https://www.npmjs.org/package/bufferedstream)
 [![build status](https://img.shields.io/travis/mjackson/bufferedstream.svg?style=flat-square)](https://travis-ci.org/mjackson/bufferedstream)
 [![dependency status](https://img.shields.io/david/mjackson/bufferedstream.svg?style=flat-square)](https://david-dm.org/mjackson/bufferedstream)
+[![code climate](https://img.shields.io/codeclimate/github/mjackson/bufferedstream.svg?style=flat-square)](https://codeclimate.com/github/mjackson/bufferedstream)
 
 [BufferedStream](https://github.com/mjackson/bufferedstream) is a robust stream implementation for node.js and the browser based on the initial version of the stream API in Node.js. All data that is written to a BufferedStream is buffered until the next turn of the event loop. This greatly enhances the usability of streams by making it easy to setup listeners in the same turn of the event loop before data is emitted.
 
