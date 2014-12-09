@@ -9,7 +9,7 @@
   },
   "main": "modules/BufferedStream.js",
   "scripts": {
-    "test": "mocha \"modules/**/__tests__/**/*-test.js\"",
+    "test": "jshint . && mocha \"modules/**/__tests__/**/*-test.js\"",
     "bundle-tests": "browserify modules/__tests__/browser/tests.js --detect-globals false --debug > modules/__tests__/browser/tests-bundle.js",
     "serve-tests": "http-server modules/__tests__/browser"
   },
@@ -25,6 +25,7 @@
     "browserify": "~4.1.9",
     "expect": "~0.1.1",
     "http-server": "~0.6.1",
+    "jshint": "^2.5.10",
     "mocha": "^2.0.1"
   },
   "bugs": {
