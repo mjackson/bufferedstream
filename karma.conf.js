@@ -6,15 +6,19 @@ module.exports = function (config) {
     frameworks: [ 'mocha' ],
 
     files: [
-      'modules/__tests__/browser/tests.js'
+      'modules/tests.webpack.js'
     ],
 
     preprocessors: {
-      'modules/__tests__/browser/tests.js': [ 'webpack', 'sourcemap' ]
+      'modules/tests.webpack.js': [ 'webpack', 'sourcemap' ]
     },
 
     webpack: {
       devtool: 'inline-source-map'
+    },
+
+    webpackServer: {
+      noInfo: true
     }
 
   });
