@@ -11,7 +11,7 @@
   "scripts": {
     "dist": "webpack --output-library-target var --output-library BufferedStream modules/BufferedStream.js dist/BufferedStream.js",
     "test": "jshint . && mocha modules/**/__tests__/*-test.js",
-    "serve-tests": "webpack-dev-server -d --content-base modules/__tests__/browser --no-info modules/__tests__/browser/tests.js modules/__tests__/browser/tests-bundle.js"
+    "test-browser": "karma start"
   },
   "engines": {
     "node": ">=0.4.7"
@@ -24,9 +24,14 @@
   "devDependencies": {
     "expect": "^1.1.0",
     "jshint": "^2.5.10",
+    "karma": "^0.12.28",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-cli": "0.0.4",
+    "karma-mocha": "^0.1.10",
+    "karma-sourcemap-loader": "^0.3.2",
+    "karma-webpack": "^1.3.1",
     "mocha": "^2.0.1",
-    "webpack": "^1.4.13",
-    "webpack-dev-server": "^1.6.6"
+    "webpack": "^1.4.13"
   },
   "bugs": {
     "url": "https://github.com/mjackson/bufferedstream/issues"

@@ -54,13 +54,10 @@ To run the tests in node:
     $ npm install
     $ npm test
 
-To run the tests in a browser, first run:
+To run the tests in Chrome:
 
     $ npm install
-    $ npm run bundle-tests
-    $ npm run serve-tests
-
-Then open [http://localhost:8080/](http://localhost:8080/) in a browser.
+    $ npm run test-browser
 
 ### License
 
