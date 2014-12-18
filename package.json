@@ -10,7 +10,7 @@
   "main": "modules/BufferedStream.js",
   "scripts": {
     "dist": "webpack --output-library-target var --output-library BufferedStream modules/BufferedStream.js dist/BufferedStream.js",
-    "test": "jshint . && mocha modules/**/__tests__/**/*-test.js",
+    "test": "jshint . && mocha modules/**/__tests__/*-test.js",
     "serve-tests": "webpack-dev-server -d --content-base modules/__tests__/browser --no-info modules/__tests__/browser/tests.js modules/__tests__/browser/tests-bundle.js"
   },
   "engines": {
