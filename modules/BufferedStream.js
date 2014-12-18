@@ -1,5 +1,4 @@
 /* jshint -W084 */
-
 var d = require('d');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
@@ -12,12 +11,12 @@ var binaryTo = require('./utils/binaryTo');
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
 
 var BaseClass, async;
-if (typeof window !== 'undefined') {
+if (typeof window === 'undefined') {
+  BaseClass = require('stream').Stream;
+  async = process.nextTick;
+} else {
   BaseClass = EventEmitter;
   async = window.setTimeout;
-} else {
-  BaseClass = require('stream' + '').Stream; // Stop Browserify.
-  async = process.nextTick;
 }
 
 function trackSource(dest) {
