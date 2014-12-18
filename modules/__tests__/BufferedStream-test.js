@@ -1,13 +1,17 @@
 /* jshint -W058 */
-
 var assert = require('assert');
 var expect = require('expect');
-var isBinary = require('../utils/isBinary');
 var binaryFrom = require('../utils/binaryFrom');
 var binaryTo = require('../utils/binaryTo');
+var collectDataInString = require('./helpers').collectDataInString;
+var describeSourceType = require('./helpers').describeSourceType;
 var BufferedStream = require('../BufferedStream');
 
 describe('A BufferedStream', function () {
+
+  describeSourceType('String', String);
+  describeSourceType('BufferedStream', BufferedStream);
+
   describe('when newly created', function () {
     var stream = new BufferedStream;
 
@@ -222,138 +226,4 @@ describe('A BufferedStream', function () {
     });
   });
 
-  testSourceType('String', String);
-  testSourceType('BufferedStream', BufferedStream);
-
-  if (typeof Buffer !== 'undefined')
-    testSourceType('Buffer', Buffer);
-
-  var describeNode = typeof process === 'undefined' ? describe.skip : describe;
-
-  describeNode('when sourced from a node Readable', function () {
-    it('does not throw', function () {
-      var fs = require('fs');
-      var source = fs.createReadStream(__filename);
-
-      expect(function () {
-        new BufferedStream(source);
-      }).toNotThrow();
-    });
-
-    it('emits the entire contents of the source', function (done) {
-      var fs = require('fs');
-      var contents = fs.readFileSync(__filename);
-
-      var stream = new BufferedStream(fs.createReadStream(__filename));
-
-      collectDataInString(stream, function (string) {
-        assert.equal(string, contents.toString());
-        done();
-      });
-    });
-  });
 });
-
-function collectData(stream, callback) {
-  var chunks = [];
-
-  stream.on('data', function (chunk) {
-    chunks.push(chunk);
-  });
-
-  stream.on('end', function () {
-    callback(chunks);
-  });
-
-  stream.resume();
-}
-
-function stringifyData(data) {
-  return binaryTo(require('bodec').join(data));
-}
-
-function collectDataInString(stream, callback) {
-  collectData(stream, function (data) {
-    callback(stringifyData(data));
-  });
-}
-
-function collectDataFromSource(source, encoding, callback) {
-  if (typeof encoding === 'function') {
-    callback = encoding;
-    encoding = null;
-  }
-
-  var stream = new BufferedStream(source);
-  stream.encoding = encoding;
-  collectData(stream, callback);
-
-  return stream;
-}
-
-function temporarilyPauseThenCollectDataFromSource(source, encoding, callback) {
-  var stream = collectDataFromSource(source, encoding, callback);
-  stream.pause();
-  setTimeout(function () {
-    stream.resume();
-  });
-}
-
-function testSourceType(sourceType, sourceFactory) {
-  describe('when sourced from a ' + sourceType, function () {
-    var content = 'Hello world';
-    var source;
-    beforeEach(function () {
-      source = sourceFactory(content);
-
-      if (typeof source.pause === 'function')
-        source.pause();
-    });
-
-    it('emits its content as binary data', function (callback) {
-      collectDataFromSource(source, function (data) {
-        data.forEach(function (chunk) {
-          assert(isBinary(chunk));
-        });
-        assert.equal(stringifyData(data), content);
-        callback(null);
-      });
-    });
-
-    describe('and an encoding is set', function () {
-      it('emits its content as strings', function (callback) {
-        collectDataFromSource(source, 'utf8', function (data) {
-          data.forEach(function (chunk) {
-            assert.equal(typeof chunk, 'string');
-          });
-          assert.equal(data.join(''), content);
-          callback(null);
-        });
-      });
-    });
-
-    describe('and temporarily paused', function () {
-      it('emits its content as binary data', function (callback) {
-        temporarilyPauseThenCollectDataFromSource(source, function (data) {
-          data.forEach(function (chunk) {
-            assert(isBinary(chunk));
-          });
-          assert.equal(stringifyData(data), content);
-          callback(null);
-        });
-      });
-
-      describe('and an encoding is set', function () {
-        it('emits its content as strings', function (callback) {
-          temporarilyPauseThenCollectDataFromSource(source, 'utf8', function (data) {
-            data.forEach(function (chunk) {
-              assert.equal(typeof chunk, 'string');
-            });
-            assert.equal(data.join(''), content);
-            callback(null);
-          });
-        });
-      });
-    });
-  });
-}
