@@ -1,3 +1,7 @@
+= 3.0.3 / 2014-12-18
+
+  * Better browser tests using karma
+
 = 3.0.2 / 2014-11-10
 
   * Remove tests from npm package
