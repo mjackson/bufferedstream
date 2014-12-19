@@ -6,11 +6,11 @@ module.exports = function (config) {
     frameworks: [ 'mocha' ],
 
     files: [
-      'modules/tests.webpack.js'
+      'tests.webpack.js'
     ],
 
     preprocessors: {
-      'modules/tests.webpack.js': [ 'webpack', 'sourcemap' ]
+      'tests.webpack.js': [ 'webpack', 'sourcemap' ]
     },
 
     webpack: {
