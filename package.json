@@ -9,7 +9,7 @@
   },
   "main": "modules/BufferedStream.js",
   "scripts": {
-    "dist": "webpack --output-library-target var --output-library BufferedStream modules/BufferedStream.js dist/BufferedStream.js",
+    "dist": "webpack modules/BufferedStream.js dist/BufferedStream.min.js",
     "test": "jshint . && mocha modules/**/__tests__/*-test.js",
     "test-browser": "karma start"
   },
