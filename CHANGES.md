@@ -1,4 +1,4 @@
-= HEAD
+= 3.0.5 / 2014-12-22
 
   * Update bodec dependency for browsers
   * Removed dependency on d
