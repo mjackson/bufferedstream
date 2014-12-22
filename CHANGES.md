@@ -1,3 +1,7 @@
+= HEAD
+
+  * Update bodec dependency for browsers
+
 = 3.0.3 / 2014-12-18
 
   * Better browser tests using karma
