@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "bodec": "git://github.com/mjackson/bodec#browser",
-    "d": "~0.1.1",
     "events": "~1.0.1"
   },
   "devDependencies": {
