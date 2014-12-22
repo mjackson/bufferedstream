@@ -17,7 +17,7 @@
     "node": ">=0.4.7"
   },
   "dependencies": {
-    "bodec": "~0.1.0",
+    "bodec": "git://github.com/creationix/bodec#29168738",
     "d": "~0.1.1",
     "events": "~1.0.1"
   },
