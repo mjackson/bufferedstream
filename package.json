@@ -10,7 +10,7 @@
   "main": "modules/BufferedStream.js",
   "scripts": {
     "dist": "webpack modules/BufferedStream.js dist/BufferedStream.min.js",
-    "test": "jshint . && mocha modules/**/__tests__/*-test.js",
+    "test": "jshint . && mocha --reporter spec 'modules/**/__tests__/*-test.js'",
     "test-browser": "karma start"
   },
   "engines": {
