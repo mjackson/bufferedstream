@@ -1,4 +1,9 @@
 /* jshint -W084 */
+/*!
+ * BufferedStream - A robust stream implementation for node.js and the browser
+ * https://github.com/mjackson/bufferedstream
+ */
+
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
