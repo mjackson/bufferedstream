@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "bodec": "git://github.com/mjackson/bodec#browser",
+    "describe-property": "^1.0.0",
     "events": "~1.0.1"
   },
   "devDependencies": {

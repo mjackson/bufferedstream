@@ -3,7 +3,7 @@
  * BufferedStream - A robust stream implementation for node.js and the browser
  * https://github.com/mjackson/bufferedstream
  */
-
+var d = require('describe-property');
 var EventEmitter = require('events').EventEmitter;
 var isBinary = require('./utils/isBinary');
 var binaryFrom = require('./utils/binaryFrom');
@@ -152,37 +152,29 @@ function BufferedStream(maxSize, source, sourceEncoding) {
 
 BufferedStream.prototype = Object.create(BaseClass.prototype, {
 
-  constructor: {
-    value: BufferedStream
-  },
+  constructor: d(BufferedStream),
 
   /**
    * A read-only property that is true if this stream has no data to emit.
    */
-  empty: {
-    get: function () {
-      return this._chunks == null || this._chunks.length === 0;
-    }
-  },
+  empty: d.gs(function () {
+    return this._chunks == null || this._chunks.length === 0;
+  }),
 
   /**
    * A read-only property that is true if this stream's buffer is full.
    */
-  full: {
-    get: function () {
-      return this.maxSize < this.size;
-    }
-  },
+  full: d.gs(function () {
+    return this.maxSize < this.size;
+  }),
 
   /**
    * A read-only property that is true if this stream is currently receiving
    * data from another stream via pipe().
    */
-  piped: {
-    get: function () {
-      return this._source != null;
-    }
-  },
+  piped: d.gs(function () {
+    return this._source != null;
+  }),
 
   /**
    * Sets this stream's encoding. If an encoding is set, this stream will emit
@@ -190,33 +182,27 @@ BufferedStream.prototype = Object.create(BaseClass.prototype, {
    *
    * Valid encodings are "hex", "base64", "utf8", and "utf-8".
    */
-  setEncoding: {
-    value: function (encoding) {
-      this.encoding = encoding;
-    }
-  },
+  setEncoding: d(function (encoding) {
+    this.encoding = encoding;
+  }),
 
   /**
    * Prevents this stream from emitting data events until resume is called.
    * Note: This does not prevent writes to this stream.
    */
-  pause: {
-    value: function () {
-      this.paused = true;
-    }
-  },
+  pause: d(function () {
+    this.paused = true;
+  }),
 
   /**
    * Resumes emitting data events.
    */
-  resume: {
-    value: function () {
-      if (this.paused)
-        flushSoon(this);
+  resume: d(function () {
+    if (this.paused)
+      flushSoon(this);
 
-      this.paused = false;
-    }
-  },
+    this.paused = false;
+  }),
 
   /**
    * Pipes all data in this stream through to the given destination stream.
@@ -226,124 +212,118 @@ BufferedStream.prototype = Object.create(BaseClass.prototype, {
    * This function was copied out of node's lib/stream.js and modified for
    * use in other JavaScript environments.
    */
-  pipe: {
-    value: function (dest, options) {
-      var source = this;
+  pipe: d(function (dest, options) {
+    var source = this;
 
-      function ondata(chunk) {
-        if (dest.writable && false === dest.write(chunk))
-          source.pause();
-      }
-
-      source.on('data', ondata);
-
-      function ondrain() {
-        if (source.readable)
-          source.resume();
-      }
-
-      dest.on('drain', ondrain);
-
-      var didOnEnd = false;
-      function onend() {
-        if (didOnEnd) return;
-        didOnEnd = true;
-
-        dest.end();
-      }
-
-      // If the 'end' option is not supplied, dest.end() will be called when
-      // source gets the 'end' or 'close' events. Only dest.end() once.
-      if (!dest._isStdio && (!options || options.end !== false))
-        source.on('end', onend);
-
-      // don't leave dangling pipes when there are errors.
-      function onerror(error) {
-        cleanup();
-        if (EventEmitter.listenerCount(this, 'error') === 0)
-          throw error; // Unhandled stream error in pipe.
-      }
-
-      source.on('error', onerror);
-      dest.on('error', onerror);
-
-      // remove all the event listeners that were added.
-      function cleanup() {
-        source.removeListener('data', ondata);
-        dest.removeListener('drain', ondrain);
-
-        source.removeListener('end', onend);
-
-        source.removeListener('error', onerror);
-        dest.removeListener('error', onerror);
-
-        source.removeListener('end', cleanup);
-      }
-
-      source.on('end', cleanup);
-      dest.on('close', cleanup);
-
-      dest.emit('pipe', source);
-
-      // Mimic the behavior of node v2 streams where pipe() resumes the flow.
-      // This lets us avoid having to do stream.resume() all over the place.
-      source.resume();
-
-      // Allow for unix-like usage: A.pipe(B).pipe(C)
-      return dest;
+    function ondata(chunk) {
+      if (dest.writable && false === dest.write(chunk))
+        source.pause();
     }
-  },
+
+    source.on('data', ondata);
+
+    function ondrain() {
+      if (source.readable)
+        source.resume();
+    }
+
+    dest.on('drain', ondrain);
+
+    var didOnEnd = false;
+    function onend() {
+      if (didOnEnd) return;
+      didOnEnd = true;
+
+      dest.end();
+    }
+
+    // If the 'end' option is not supplied, dest.end() will be called when
+    // source gets the 'end' or 'close' events. Only dest.end() once.
+    if (!dest._isStdio && (!options || options.end !== false))
+      source.on('end', onend);
+
+    // don't leave dangling pipes when there are errors.
+    function onerror(error) {
+      cleanup();
+      if (EventEmitter.listenerCount(this, 'error') === 0)
+        throw error; // Unhandled stream error in pipe.
+    }
+
+    source.on('error', onerror);
+    dest.on('error', onerror);
+
+    // remove all the event listeners that were added.
+    function cleanup() {
+      source.removeListener('data', ondata);
+      dest.removeListener('drain', ondrain);
+
+      source.removeListener('end', onend);
+
+      source.removeListener('error', onerror);
+      dest.removeListener('error', onerror);
+
+      source.removeListener('end', cleanup);
+    }
+
+    source.on('end', cleanup);
+    dest.on('close', cleanup);
+
+    dest.emit('pipe', source);
+
+    // Mimic the behavior of node v2 streams where pipe() resumes the flow.
+    // This lets us avoid having to do stream.resume() all over the place.
+    source.resume();
+
+    // Allow for unix-like usage: A.pipe(B).pipe(C)
+    return dest;
+  }),
 
   /**
    * Writes the given chunk of data to this stream. Returns false if this
    * stream is full and should not be written to further until drained, true
    * otherwise.
    */
-  write: {
-    value: function (chunk) {
-      if (!this.writable)
-        throw new Error('BufferedStream is not writable');
+  write: d(function (chunk) {
+    if (!this.writable)
+      throw new Error('BufferedStream is not writable');
 
-      if (this.ended)
-        throw new Error('BufferedStream is already ended');
+    if (this.ended)
+      throw new Error('BufferedStream is already ended');
 
-      if (!isBinary(chunk))
-        chunk = binaryFrom(chunk, arguments[1]);
+    if (!isBinary(chunk))
+      chunk = binaryFrom(chunk, arguments[1]);
 
-      this._chunks.push(chunk);
-      this.size += chunk.length;
+    this._chunks.push(chunk);
+    this.size += chunk.length;
 
-      flushSoon(this);
+    flushSoon(this);
 
-      if (this.full) {
-        this._wasFull = true;
-        return false;
-      }
-
-      return true;
+    if (this.full) {
+      this._wasFull = true;
+      return false;
     }
-  },
+
+    return true;
+  }),
 
   /**
    * Writes the given chunk to this stream and queues the end event to be
    * called as soon as soon as the stream is empty. Calling write() after
    * end() is an error.
    */
-  end: {
-    value: function (chunk) {
-      if (this.ended)
-        throw new Error('BufferedStream is already ended');
+  end: d(function (chunk) {
+    if (this.ended)
+      throw new Error('BufferedStream is already ended');
 
-      if (chunk != null)
-        this.write(chunk, arguments[1]);
+    if (chunk != null)
+      this.write(chunk, arguments[1]);
 
-      this.ended = true;
+    this.ended = true;
 
-      // Trigger the flush cycle one last time to emit
-      // any data that was written before end was called.
-      flushSoon(this);
-    }
-  }
+    // Trigger the flush cycle one last time to emit
+    // any data that was written before end was called.
+    flushSoon(this);
+  })
 
 });
 
