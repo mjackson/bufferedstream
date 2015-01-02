@@ -2,20 +2,21 @@ var webpack = require('webpack');
 
 module.exports = {
 
-  node: {
-    buffer: false
-  },
+  entry: './modules/BufferedStream.js',
 
   output: {
     library: 'BufferedStream',
     libraryTarget: 'var'
   },
 
+  node: {
+    buffer: false,
+    process: false
+  },
+
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
+    new webpack.DefinePlugin({
+      'typeof window': JSON.stringify('object')
     })
   ]
 
