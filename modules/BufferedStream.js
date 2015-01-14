@@ -15,12 +15,12 @@ var binaryTo = require('./utils/binaryTo');
 var DEFAULT_MAX_SIZE = Math.pow(2, 16); // 64k
 
 var BaseClass, async;
-if (typeof window === 'undefined') {
-  BaseClass = require('stream').Stream;
-  async = process.nextTick;
-} else {
+if (typeof window === 'object') {
   BaseClass = EventEmitter;
   async = window.setTimeout;
+} else {
+  BaseClass = require('stream').Stream;
+  async = process.nextTick;
 }
 
 function trackSource(dest) {
@@ -290,8 +290,11 @@ BufferedStream.prototype = Object.create(BaseClass.prototype, {
     if (this.ended)
       throw new Error('BufferedStream is already ended');
 
-    if (!isBinary(chunk))
+    if (typeof chunk === 'string')
       chunk = binaryFrom(chunk, arguments[1]);
+
+    if (!isBinary(chunk))
+      throw new Error('BufferedStream only accepts binary data');
 
     this._chunks.push(chunk);
     this.size += chunk.length;
