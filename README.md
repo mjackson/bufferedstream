@@ -43,7 +43,7 @@ Using [npm](http://npmjs.org):
 
     $ npm install bufferedstream
 
-Or, include `dist/BufferedStream.min.js` in a `<script>` tag:
+Or, include [`dist/BufferedStream.min.js`](https://github.com/mjackson/bufferedstream/blob/master/dist/BufferedStream.min.js) in a `<script>` tag:
 
 ```html
 <script src="BufferedStream.min.js"></script>
