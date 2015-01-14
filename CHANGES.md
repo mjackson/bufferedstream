@@ -1,3 +1,7 @@
+= HEAD
+
+  * Update bodec to 1.0.0
+
 = 3.0.5 / 2014-12-22
 
   * Update bodec dependency for browsers
