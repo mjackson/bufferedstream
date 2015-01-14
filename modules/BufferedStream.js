@@ -3,11 +3,9 @@
  * BufferedStream - A robust stream implementation for node.js and the browser
  * https://github.com/mjackson/bufferedstream
  */
+var bodec = require('bodec');
 var d = require('describe-property');
 var EventEmitter = require('events').EventEmitter;
-var isBinary = require('./utils/isBinary');
-var binaryFrom = require('./utils/binaryFrom');
-var binaryTo = require('./utils/binaryTo');
 
 /**
  * The default maximum buffer size.
@@ -72,7 +70,7 @@ function flush(stream) {
     stream.size -= chunk.length;
 
     if (stream.encoding) {
-      stream.emit('data', binaryTo(chunk, stream.encoding));
+      stream.emit('data', bodec.toString(chunk, stream.encoding));
     } else {
       stream.emit('data', chunk);
     }
@@ -291,9 +289,9 @@ BufferedStream.prototype = Object.create(BaseClass.prototype, {
       throw new Error('BufferedStream is already ended');
 
     if (typeof chunk === 'string')
-      chunk = binaryFrom(chunk, arguments[1]);
+      chunk = bodec.fromString(chunk, arguments[1]);
 
-    if (!isBinary(chunk))
+    if (!bodec.isBinary(chunk))
       throw new Error('BufferedStream only accepts binary data');
 
     this._chunks.push(chunk);

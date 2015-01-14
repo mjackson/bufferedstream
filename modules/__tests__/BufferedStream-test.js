@@ -1,8 +1,7 @@
 /* jshint -W058 */
 var assert = require('assert');
 var expect = require('expect');
-var binaryFrom = require('../utils/binaryFrom');
-var binaryTo = require('../utils/binaryTo');
+var bodec = require('bodec');
 var collectDataInString = require('./helpers').collectDataInString;
 var describeSourceType = require('./helpers').describeSourceType;
 var BufferedStream = require('../BufferedStream');
@@ -198,7 +197,7 @@ describe('A BufferedStream', function () {
     describe('when called with a string in base64 encoding', function () {
       it('uses the proper encoding', function (callback) {
         var content = 'hello';
-        var stream = new BufferedStream(binaryTo(binaryFrom(content), 'base64'), 'base64');
+        var stream = new BufferedStream(bodec.toString(bodec.fromString(content), 'base64'), 'base64');
 
         collectDataInString(stream, function (string) {
           expect(string).toEqual(content);

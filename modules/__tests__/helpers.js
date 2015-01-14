@@ -1,6 +1,5 @@
 var assert = require('assert');
-var binaryTo = require('../utils/binaryTo');
-var isBinary = require('../utils/isBinary');
+var bodec = require('bodec');
 var BufferedStream = require('../BufferedStream');
 
 function collectData(stream, callback) {
@@ -18,7 +17,7 @@ function collectData(stream, callback) {
 }
 
 function stringifyData(data) {
-  return binaryTo(require('bodec').join(data));
+  return bodec.toString(bodec.join(data));
 }
 
 function collectDataInString(stream, callback) {
@@ -62,7 +61,7 @@ function describeSourceType(sourceType, sourceFactory) {
     it('emits its content as binary data', function (callback) {
       collectDataFromSource(source, function (data) {
         data.forEach(function (chunk) {
-          assert(isBinary(chunk));
+          assert(bodec.isBinary(chunk));
         });
         assert.equal(stringifyData(data), content);
         callback(null);
@@ -85,7 +84,7 @@ function describeSourceType(sourceType, sourceFactory) {
       it('emits its content as binary data', function (callback) {
         temporarilyPauseThenCollectDataFromSource(source, function (data) {
           data.forEach(function (chunk) {
-            assert(isBinary(chunk));
+            assert(bodec.isBinary(chunk));
           });
           assert.equal(stringifyData(data), content);
           callback(null);

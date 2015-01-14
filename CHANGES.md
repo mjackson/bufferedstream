@@ -1,3 +1,7 @@
+= HEAD
+
+  * Use utf-8 encoding by default, instead of binary
+
 = 3.0.8 / 2015-01-13
 
   * Update bodec to 1.0.0

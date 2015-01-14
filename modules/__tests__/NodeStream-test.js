@@ -18,12 +18,24 @@ describe('A BufferedStream that is sourced from a node Readable', function () {
   });
 
   it('emits the entire contents of the source', function (done) {
-    var contents = fs.readFileSync(__filename);
+    var source = fs.readFileSync(__filename, 'utf8');
     var stream = new BufferedStream(fs.createReadStream(__filename));
 
     collectDataInString(stream, function (string) {
-      assert.equal(string, contents.toString());
+      assert.equal(string, source);
       done();
+    });
+  });
+
+  describe('when it contains a multibyte string', function () {
+    it('emits the string correctly', function (done) {
+      var source = fs.readFileSync(__dirname + '/card.json', 'utf8');
+      var stream = new BufferedStream(source);
+
+      collectDataInString(stream, function (string) {
+        assert.equal(string, source);
+        done();
+      });
     });
   });
 
