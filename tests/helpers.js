@@ -1,6 +1,6 @@
 var assert = require('assert');
 var bodec = require('bodec');
-var BufferedStream = require('../BufferedStream');
+var BufferedStream = require('../index');
 
 function collectData(stream, callback) {
   var chunks = [];

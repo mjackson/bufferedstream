@@ -4,7 +4,7 @@ var expect = require('expect');
 var bodec = require('bodec');
 var collectDataInString = require('./helpers').collectDataInString;
 var describeSourceType = require('./helpers').describeSourceType;
-var BufferedStream = require('../BufferedStream');
+var BufferedStream = require('../index');
 
 describe('A BufferedStream', function () {
 

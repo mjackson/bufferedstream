@@ -1,3 +1,7 @@
+= HEAD
+
+  * Removed "modules" directory
+
 = 3.0.9 / 2015-01-14
 
   * Use utf-8 encoding by default, instead of binary

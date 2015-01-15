@@ -1,8 +1,8 @@
 .jshintignore
 .jshintrc
 .travis.yml
-dist
-modules/**/__tests__
 karma.conf.js
 tests.webpack.js
 webpack.config.js
+dist
+tests

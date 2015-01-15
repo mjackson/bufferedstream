@@ -1,1 +1,1 @@
-require('./modules/__tests__/BufferedStream-test.js');
+require('./tests/BufferedStream-test.js');

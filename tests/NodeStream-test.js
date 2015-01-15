@@ -3,7 +3,7 @@ var assert = require('assert');
 var expect = require('expect');
 var collectDataInString = require('./helpers').collectDataInString;
 var describeSourceType = require('./helpers').describeSourceType;
-var BufferedStream = require('../BufferedStream');
+var BufferedStream = require('../index');
 
 describe('A BufferedStream that is sourced from a node Readable', function () {
 
