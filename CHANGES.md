@@ -1,4 +1,4 @@
-= HEAD
+= 3.1.0 / 2015-01-18
 
   * Removed "modules" directory
 
