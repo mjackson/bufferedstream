@@ -17,7 +17,7 @@
     "node": ">=0.4.7"
   },
   "dependencies": {
-    "bodec": "git://github.com/mjackson/bodec#to-from-string",
+    "bodec": "^1.1.0",
     "describe-property": "^1.0.0",
     "events": "~1.0.1"
   },
